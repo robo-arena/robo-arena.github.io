@@ -7,10 +7,10 @@
   --brand-text: #333333;
 
   /* pastel gradient stops (re-used by body & navbar) */
-  --g2: #ffffff;  /* creamy white (leftmost)   */
-  --g3: #d5f3f1;  /* mint-turquoise */
-  --g1: #ffffff;  /* barely mint               */
-  --g0: #d5f3f1;  /* pure white (rightmost)    */
+  --g2: #ffffff;
+  --g3: #d5f3f1;
+  --g1: #ffffff; 
+  --g0: #d5f3f1; 
 
   /* pill colours */
   --pill-uni: #fff3d8;
