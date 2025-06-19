@@ -343,3 +343,65 @@ html, body { overflow-x: hidden; }
     margin-right: 0;
   }
 }
+
+
+/* ------------------------------------------------------------------
+   RESPONSIVE QUICK FIX (phones & small tablets)
+------------------------------------------------------------------ */
+@media (max-width: 768px) {
+
+  /* NAV BAR ------------------------------------------------------ */
+  .navbar {
+    flex-wrap: wrap;           /* links flow onto a second line   */
+    gap: 0.75rem 1.25rem;      /* tighter gaps (row, column)       */
+    padding: 0.8rem 1rem;      /* slimmer padding                  */
+  }
+
+  /* each nav link keeps readable size but can wrap internally */
+  .navlink {
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+
+  /* let the logo stop pushing too hard on very small widths */
+  .logo {
+    margin-right: 0;           /* undo the desktop auto-push       */
+  }
+
+  /* BODY PADDING ------------------------------------------------- */
+  body {
+    padding: 0 0.5rem;         /* reclaim side-space on mobiles    */
+  }
+
+  /* WIDE MEDIA --------------------------------------------------- */
+  .body-img,
+  .body-video,
+  .method-figure {
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* HEADERS ------------------------------------------------------ */
+  .section-title {
+    margin-left: 0.5rem;       /* small indent instead of desktop */
+    font-size: 1.6rem;
+  }
+
+  /* PROCESS & RESOURCE CARDS ------------------------------------ */
+  .card-content {
+    flex-direction: column !important;  /* image above text         */
+    gap: 1rem;
+  }
+
+  .resources-container {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* make the big H1 fit narrow phones */
+  .paper-title { font-size: 2.2rem; }
+  .subtitle    { font-size: 1.2rem; }
+}
