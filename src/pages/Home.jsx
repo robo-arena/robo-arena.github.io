@@ -140,6 +140,12 @@ export default function Home() {
           CoRL Challenge
         </Link> */}
 
+        <Link to="/volunteer" className="link-card">
+        <span className="icon">🤝</span>
+        Join as
+        Evaluator
+        </Link>
+
         <Link
           to="https://discord.com/invite/z7YjjHwNRP"
           className="link-card"

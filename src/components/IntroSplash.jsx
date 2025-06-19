@@ -77,6 +77,7 @@ export default function IntroSplash({ onDone }) {
         muted
         playsInline
       />
+      <div className="splash-overlay"></div>
       <h1 className="splash-text">
         <span className="robo">Robo</span>
         <span className="arena">Arena</span>

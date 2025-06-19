@@ -151,7 +151,7 @@
 .method-figure {
   display: block;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 3.5rem auto;              /* extra whitespace top + bottom */
   border-radius: 8px;
   box-shadow: 0 4px 12px hsl(0 0% 0% / 15%);
@@ -280,4 +280,10 @@
 
 .resource-link:hover {
   text-decoration: underline;
+}
+
+.section-title {
+  text-align: left;      /* keep text left-justified */
+  margin-left: 3.0rem;  /* ← nudge the whole heading to the right */
+  /* you can tweak this to 1rem, 2rem, etc. */
 }
