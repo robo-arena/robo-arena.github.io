@@ -1,0 +1,47 @@
+.submit-wrap {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+/* keep 16 : 9 aspect ratio but grow to full width */
+.form-frame {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;            /* 16:9 */
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 1px 8px hsl(0 0% 0% / 12%);
+}
+
+.form-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.submit-wrap {
+  max-width: 1000px;
+  margin: 2.5rem auto;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+.submit-blurb {
+  max-width: 720px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.45;
+  font-size: 1rem;
+}
+
+/*  iframe fills the content column; no internal scrollbar  */
+.submit-iframe {
+  width: 100%;
+  min-height: 2200px;   /* big enough for most forms; adjust if needed */
+  border: none;
+  /* box-shadow: 0 1px 8px hsl(0 0% 0% / 10%); */
+  border-radius: 8px;
+}

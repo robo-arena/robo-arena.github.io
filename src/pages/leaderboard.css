@@ -1,0 +1,47 @@
+/* prettier leaderboard table */
+.lb-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.5rem auto;
+  font-size: 1.05rem;
+  box-shadow: 0 2px 8px hsl(0 0% 0% / 10%);
+  border-radius: 8px;
+  overflow: hidden;          /* rounds the header corners too */
+}
+
+.lb-table thead th {
+  background: #f59749;       /* brand orange */
+  color: #ffffff;
+  font-weight: 600;
+  padding: 12px 10px;
+  text-align: left;
+}
+
+.lb-table tbody td {
+  padding: 10px;
+}
+
+.lb-table .right  { text-align: right;  padding-right: 10x;}
+
+.lb-table tbody tr:nth-child(even) { background: #fafafa; }
+.lb-table tbody tr:hover           { background: #fff3e6; }
+
+.lb-filter {
+  text-align: right;
+  margin: 0.5rem 0 0.6rem 0;
+  font-size: 0.95rem;
+}
+
+.lb-table th.right   { text-align: right;  }
+.lb-table th.center  { text-align: center; }
+
+/* cell alignment helpers  */
+.lb-table td.right   { text-align: right;  padding-right: 10px; }
+.lb-table td.center  { text-align: center; }
+
+.lb-table td.oss-cell {
+  text-align: right;      /* push toward header edge  */
+  padding-right: 50px;    /* tweak until it looks good */
+  width: 150px;            /* fixed width keeps layout stable (adjust if needed) */
+}

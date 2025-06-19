@@ -1,0 +1,53 @@
+.challenge-wrap {
+  max-width: 1000px;
+  margin: 2.5rem auto;
+  padding: 0 1rem;
+}
+
+.challenge-title {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.challenge-desc {
+  text-align: left;            /* left-aligned description */
+  line-height: 1.5;
+  font-size: 1rem;
+  max-width: 760px;
+  margin: 0 auto 2rem;
+  text-align: left;
+}
+
+.challenge-desc ul {
+  margin: 0.75rem 0 1.25rem 1.5rem;
+  padding-left: 0;
+}
+
+.challenge-desc li {
+  margin-bottom: 0.4rem;
+}
+
+.challenge-desc a {
+  color: #1a73e8;
+  text-decoration: underline;
+}
+
+.challenge-iframe {
+  width: 100%;
+  min-height: 1200px;          /* adjust to your form’s length */
+  border: none;
+  border-radius: 8px;
+  /* box-shadow: 0 1px 8px hsl(0 0% 0% / 10%); */
+  /* padding on top */
+  padding-top: 1rem;          /* space for the header */
+}
+
+.timeline {
+  margin: 0.75rem 0 1.75rem 1.2rem;   /* indent a bit */
+  padding-left: 0;
+}
+
+.timeline li {
+  margin-bottom: 0.45rem;
+  line-height: 1.45;
+}

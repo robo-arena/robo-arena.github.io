@@ -1,0 +1,283 @@
+.home-wrap {
+  max-width: 1200px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+  text-align: center;    /* NEW */
+}
+
+.paper-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+}
+
+.subtitle {
+  font-weight: 400;
+}
+
+.author-line {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0.75rem auto;
+  max-width: 1000px;   /* NEW limit so line breaks sooner */
+  line-height: 1.4;
+  text-align: center; /* inherits, but explicit for clarity */
+}
+
+/* compact centred list of universities */
+.footnotes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;      /* centres every row, incl. the last one */
+  gap: 0.25rem 1rem;            /* row gap 4 px, column gap 16 px */
+
+  list-style: decimal inside;   /* 1. 2. 3. … */
+  padding: 0;
+  margin: 0 auto 2rem auto;
+  font-size: 0.8rem;
+  color: #888;
+  max-width: 550px;             /* overall width cap to avoid full-width stretch */
+}
+
+.footnotes li {
+  white-space: nowrap;          /* keep each university on one line */
+}
+
+.link-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 1.5rem;
+  max-width: 900px;                  /* optional: narrows the grid area */
+  margin: 0 auto;                    /* keep centered */
+}
+
+.link-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 110px;
+  height: 110px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 6px hsl(0 0% 0% / 10%);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #333;
+  transition: transform 0.2s;
+}
+
+.link-card:hover {
+  transform: translateY(-4px);
+}
+
+.icon {
+  font-size: 2.6rem;
+  margin-bottom: 0.4rem;
+}
+
+/* main content paragraphs & media */
+.body-section {
+  margin-top: 4.5rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #444;
+  text-align: left; 
+}
+
+.body-section p {
+  margin: 1.1rem 0;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  max-width: 1200px;   /* keeps lines readable */
+  margin-left: auto;  /* center the paragraphs */
+  margin-right: auto;
+}
+
+.body-img {
+  display: block;
+  width: 100%;
+  max-width: 1100px;
+  margin: 3rem auto;   /* center + vertical space */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px hsl(0 0% 0% / 15%);
+}
+
+.body-video {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  margin: 2rem auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px hsl(0 0% 0% / 15%);
+}
+
+.body-pdf {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  height: 600px;             /* or whatever suits your layout */
+  margin: 2rem auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px hsl(0 0% 0% / 15%);
+}
+
+.body-section a {
+  color: #0073a8;          /* brighter blue */
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+/* ===== TL;DR highlight ===== */
+.tldr-wrap {
+  background: var(--brand-gray);    /* light neutral already in theme */
+  border-left: 6px solid #f59749;   /* brand-orange accent bar  */
+  box-shadow: 0 2px 6px hsl(0 0% 0% / 10%);
+  border-radius: 6px;
+  padding: 1.2rem 1.4rem;
+  margin: 3rem auto 2.5rem;         /* space above & below */
+  max-width: 900px;                 /* align with link grid width */
+}
+
+.tldr-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0 0 0.6rem 0;
+  color: #424242;                   /* same charcoal as nav links */
+}
+
+/* ===== Overview figure block ===== */
+.method-figure {
+  display: block;
+  width: 100%;
+  max-width: 1100px;
+  margin: 3.5rem auto;              /* extra whitespace top + bottom */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px hsl(0 0% 0% / 15%);
+}
+
+.tldr-wrap a {
+  color: #0073a8;          /* same blue you used in .body-section */
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.tldr-wrap a:hover {
+  color: #005e85;          /* slightly darker on hover */
+}
+
+/* ===== Process Cards ===== */
+.process-card {
+  margin: 1rem auto;
+  max-width: 1000px;
+  padding: 0.5rem;
+}
+
+.card-content {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.card-content:hover {
+  transform: translateY(-4px);
+}
+
+.card-content.reverse {
+  flex-direction: row-reverse;
+}
+
+.process-img-wrap {
+  flex: 1;
+  min-width: 300px;
+}
+
+.process-img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.process-text {
+  flex: 1;
+}
+
+.process-text h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #2a2a2a;
+}
+
+.process-text p {
+  margin: 0;
+  line-height: 1.6;
+  color: #444;
+}
+
+/* ===== Resources Section ===== */
+.resources-section {
+  padding: 4rem 0;
+}
+
+.resources-section h2 {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.resources-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.resource-card {
+  flex: 1;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.resource-icon {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1.5rem;
+}
+
+.resource-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.resource-card h3 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.resource-card p {
+  margin-bottom: 1.5rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+.resource-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.resource-link:hover {
+  text-decoration: underline;
+}
