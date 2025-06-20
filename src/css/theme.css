@@ -249,22 +249,28 @@ html, body { overflow-x: hidden; }
 }
 
 /* -------------------------------------------------------------
-   PHONE “ZOOM-OUT” HACK  (≤ 600 px viewport)
-   Scales the entire app to 33 % and widens the wrapper to
-   counter-shrink, so users see the full desktop layout.
+   AUTO-SCALE THE WHOLE APP ON SMALL SCREENS
+   • Design width = 1200 px  (your .home-wrap max-width)
+   • Scale factor = 100vw / 1200
+   • Hide navbar entirely on phones
 ------------------------------------------------------------- */
-@media (max-width: 600px) {
+@media (max-width: 1200px) {
 
-  /* 3× zoom-out: 1 ÷ 3 ≈ 0.333 — widen wrapper 300 % */
-  #zoom-wrapper {
-    transform: scale(0.3333);
-    transform-origin: top left;
-    width: 300%;
+  :root {
+    --scale: calc(100vw / 1200);   /* dynamic 0 … 1  */
   }
 
-  /* hide the whole navigation bar, logo included */
+  #zoom-wrapper {
+    transform: scale(var(--scale));
+    transform-origin: top left;
+    /* Counter-expand so the scaled content fills the viewport */
+    width: calc(100% / var(--scale));
+    height: calc(100% / var(--scale));   /* removes empty space */
+  }
+
+  /* optional: hide the whole navbar on narrow screens */
   .navbar { display: none; }
 
-  /* keep page firmly within viewport */
-  body { margin: 0; overflow-x: hidden; }
+  /* prevent sideways scroll bars */
+  html, body { margin: 0; overflow-x: hidden; }
 }
