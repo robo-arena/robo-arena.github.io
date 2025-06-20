@@ -254,10 +254,10 @@ html, body { overflow-x: hidden; }
    • Scale factor = 100vw / 1200
    • Hide navbar entirely on phones
 ------------------------------------------------------------- */
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
 
   :root {
-    --scale: calc(100vw / 1200);   /* dynamic 0 … 1  */
+    --scale: calc(100vw / 1400);   /* dynamic 0 … 1  */
   }
 
   #zoom-wrapper {
