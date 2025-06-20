@@ -247,3 +247,24 @@ html, body { overflow-x: hidden; }
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* -------------------------------------------------------------
+   PHONE “ZOOM-OUT” HACK  (≤ 600 px viewport)
+   Scales the entire app to 25 % and widens the wrapper to
+   counter-shrink, so users see the full desktop layout.
+------------------------------------------------------------- */
+@media (max-width: 600px) {
+  #zoom-wrapper {
+    transform: scale(0.25);    /* 1 ÷ 4 = 0.25  ← 4× zoom-out   */
+    transform-origin: top left;
+    width: 400%;               /* 1 ÷ 0.25 = 4   (counter-scale) */
+  }
+
+  /* hide all navbar links except the logo */
+  .navbar .navlink {
+    display: none;
+  }
+
+  /* optional: remove default body margins so nothing clips */
+  body { margin: 0; overflow-x: hidden; }
+}

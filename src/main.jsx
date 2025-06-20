@@ -6,6 +6,8 @@ import './css/theme.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <div id="zoom-wrapper">
+      <App />      {/* or <Root /> if you renamed */}
+    </div>
   </StrictMode>,
-)
+);
