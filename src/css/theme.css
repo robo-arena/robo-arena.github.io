@@ -250,21 +250,21 @@ html, body { overflow-x: hidden; }
 
 /* -------------------------------------------------------------
    PHONE “ZOOM-OUT” HACK  (≤ 600 px viewport)
-   Scales the entire app to 25 % and widens the wrapper to
+   Scales the entire app to 33 % and widens the wrapper to
    counter-shrink, so users see the full desktop layout.
 ------------------------------------------------------------- */
 @media (max-width: 600px) {
+
+  /* 3× zoom-out: 1 ÷ 3 ≈ 0.333 — widen wrapper 300 % */
   #zoom-wrapper {
-    transform: scale(0.25);    /* 1 ÷ 4 = 0.25  ← 4× zoom-out   */
+    transform: scale(0.3333);
     transform-origin: top left;
-    width: 400%;               /* 1 ÷ 0.25 = 4   (counter-scale) */
+    width: 300%;
   }
 
-  /* hide all navbar links except the logo */
-  .navbar .navlink {
-    display: none;
-  }
+  /* hide the whole navigation bar, logo included */
+  .navbar { display: none; }
 
-  /* optional: remove default body margins so nothing clips */
+  /* keep page firmly within viewport */
   body { margin: 0; overflow-x: hidden; }
 }
