@@ -1,6 +1,6 @@
 import { useLayoutEffect } from 'react';
 
-export default function useAutoScale(designWidth = 900) {
+export default function useAutoScale(designWidth = 500) {
   useLayoutEffect(() => {
     function setScale() {
       const scale = Math.min(1, window.innerWidth / designWidth);

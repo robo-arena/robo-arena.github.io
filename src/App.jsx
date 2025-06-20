@@ -7,7 +7,7 @@ import useAutoScale from './useAutoScale.js';
 const PHONE_MAX = 1200;   // px – your cutoff
 
 export default function App() {
-  useAutoScale(900);
+  useAutoScale(500);
 
   // 1️⃣  Initial decision: show splash only if not phone-sized
   const [showSplash, setShowSplash] = useState(
