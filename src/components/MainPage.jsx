@@ -13,7 +13,7 @@ import ResultsPage from '../pages/ResultsPage.jsx';
 import Leaderboard from '../pages/Leaderboard.jsx';
 import SubmitPolicy from '../pages/SubmitPolicy.jsx';
 import JoinEvaluator from '../pages/JoinEvaluator.jsx';
-//import Challenge from '../pages/Challenge.jsx';
+import Challenge from '../pages/Challenge.jsx';
 
 export default function MainPage() {
   return (
@@ -51,19 +51,19 @@ export default function MainPage() {
           Evaluate Your Policy
         </NavLink>
 
-        {/* <NavLink
-          to="/challenge"
-          className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}
-        >
-          CoRL Challenge
-        </NavLink> */}
-
         <NavLink
           to="/volunteer"
           className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}
         >
           Join as an Evaluator
         </NavLink>
+
+                {<NavLink
+          to="/challenge"
+          className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}
+        >
+          CoRL Challenge
+        </NavLink>}
 
         <NavLink
           to="https://discord.com/invite/z7YjjHwNRP"
@@ -82,7 +82,7 @@ export default function MainPage() {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/submit" element={<SubmitPolicy />} />
         <Route path="/volunteer" element={<JoinEvaluator />} />
-        {/* <Route path="/challenge" element={<Challenge />} /> */}
+        <Route path="/challenge" element={<Challenge />} />
       </Routes>
     </Router>
   );

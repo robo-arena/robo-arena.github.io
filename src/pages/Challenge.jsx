@@ -17,10 +17,10 @@ export default function Challenge() {
         </p>
 
         <ul className="timeline">
-          <li><strong>June&nbsp;16&nbsp;2025</strong> – RoboArena public announcement; all materials, instructions & simulated environments released</li>
-          <li><strong>Aug&nbsp;1&nbsp;–&nbsp;Aug&nbsp;15</strong> – Evaluation office hours - participants may test policies on real robots</li>
-          <li><strong>Aug&nbsp;15</strong> – First real-world evaluation checkpoint; 1-week trial against baselines</li>
-          <li><strong>Aug&nbsp;22&nbsp;–&nbsp;Sept&nbsp;5</strong> – Evaluation office hours (second window)</li>
+          <li><strong>July&nbsp;14&nbsp;2025</strong> – RoboArena challenge public announcement, all materials & instructions released, simulated environments released</li>
+          <li><strong>Aug&nbsp;1&nbsp;–&nbsp;Aug&nbsp;25</strong> – Eval office hours – by request Zoom debugging sessions to test policies on robot. Policies can also be submitted directly to RoboArena (https://robo-arena.github.io/) and will get evaluated</li>
+          <li><strong>Aug&nbsp;25</strong> – First real-world evaluation checkpoint, 1-week trial of submitted policies vs baselines; results of 1-week trial shared with participants</li>
+          <li><strong>Aug&nbsp;30&nbsp;–&nbsp;Sept&nbsp;5</strong> – Eval office hours – similar by-request Zoom sessions</li>
           <li><strong>Sept&nbsp;5&nbsp;–&nbsp;Sept&nbsp;19</strong> – Final real-world evaluation period; winners determined</li>
         </ul>
       </div>
