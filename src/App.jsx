@@ -1,5 +1,6 @@
 // src/App.jsx
 import { useState, useEffect } from 'react';
+import { useLocation }         from "react-router-dom";
 import MainPage   from './components/MainPage.jsx';
 import IntroSplash from './components/IntroSplash.jsx';
 import useAutoScale from './useAutoScale.js';
@@ -9,9 +10,13 @@ const PHONE_MAX = 1200;   // px – your cutoff
 export default function App() {
   useAutoScale(700);
 
+  // 0️⃣  Determine if we're on the home page
+  const { pathname } = useLocation();
+  const onHome = pathname === "/";
+
   // 1️⃣  Initial decision: show splash only if not phone-sized
   const [showSplash, setShowSplash] = useState(
-    window.innerWidth >= PHONE_MAX
+    onHome && window.innerWidth >= PHONE_MAX
   );
 
   /* lock scrolling while splash is up */

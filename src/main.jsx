@@ -1,13 +1,16 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
-import './css/theme.css'
+// src/main.jsx
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';   // ← NEW
+import App from './App.jsx';
+
+import './index.css';
+import './css/theme.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <div id="zoom-wrapper">
-      <App />      {/* or <Root /> if you renamed */}
-    </div>
-  </StrictMode>,
+    <BrowserRouter basename="/">   {/* basename optional here */}
+      <App />
+    </BrowserRouter>
+  </StrictMode>
 );

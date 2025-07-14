@@ -1,5 +1,4 @@
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
   Link,
@@ -17,7 +16,7 @@ import Challenge from '../pages/Challenge.jsx';
 
 export default function MainPage() {
   return (
-    <Router>
+    <>
       {/* -------- NAV BAR -------- */}
       <nav className="navbar">
         <Link to="/" className="logo">
@@ -84,6 +83,6 @@ export default function MainPage() {
         <Route path="/volunteer" element={<JoinEvaluator />} />
         <Route path="/challenge" element={<Challenge />} />
       </Routes>
-    </Router>
+    </>
   );
 }
