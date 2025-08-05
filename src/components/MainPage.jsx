@@ -65,6 +65,15 @@ export default function MainPage() {
         </NavLink>}
 
         <NavLink
+          to="https://huggingface.co/datasets/RoboArena/DataDump_08-05-2025"
+          className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Data Dump
+        </NavLink>
+
+        <NavLink
           to="https://discord.com/invite/z7YjjHwNRP"
           className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}
           target="_blank"

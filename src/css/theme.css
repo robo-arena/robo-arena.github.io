@@ -211,7 +211,7 @@ html, body { overflow-x: hidden; }
 
 /* default nav link look */
 .navlink {
-  font-size: 1.05rem;
+  font-size: 0.95rem; /* was 1.05 */
   font-weight: 600;
   color: #424242;                      /* brighter blue */
   position: relative;

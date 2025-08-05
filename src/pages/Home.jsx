@@ -147,6 +147,19 @@ export default function Home() {
         </Link>}
 
         <Link
+          to="https://huggingface.co/datasets/RoboArena/DataDump_08-05-2025"
+          className="link-card"
+          // Opens HF link in a new tab
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className="icon">📦</span>
+          <span style={{ display: 'inline-block', marginTop: '10px' }}>
+            Data Dump
+          </span>
+        </Link>
+
+        <Link
           to="https://discord.com/invite/z7YjjHwNRP"
           className="link-card"
           // Opens Discord link in a new tab
