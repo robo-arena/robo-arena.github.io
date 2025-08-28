@@ -18,10 +18,9 @@ export default function Challenge() {
 
         <ul className="timeline">
           <li><strong>July&nbsp;15&nbsp;2025</strong> – RoboArena challenge public announcement, all materials & instructions released, simulated environments released</li>
-          <li><strong>Aug&nbsp;1&nbsp;–&nbsp;Aug&nbsp;25</strong> – Eval office hours – by request Zoom debugging sessions to test policies on robot. Policies can also be submitted directly to RoboArena (https://robo-arena.github.io/) and will get evaluated</li>
-          <li><strong>Aug&nbsp;25</strong> – First real-world evaluation checkpoint, 1-week trial of submitted policies vs baselines; results of 1-week trial shared with participants</li>
-          <li><strong>Aug&nbsp;30&nbsp;–&nbsp;Sept&nbsp;5</strong> – Eval office hours – similar by-request Zoom sessions</li>
-          <li><strong>Sept&nbsp;5&nbsp;–&nbsp;Sept&nbsp;19</strong> – Final real-world evaluation period; winners determined</li>
+          <li><strong>Aug&nbsp;1&nbsp;–&nbsp;Sep&nbsp;12</strong> – Eval office hours – by request Zoom debugging sessions to test policies on robot. Policies can also be submitted directly to RoboArena (https://robo-arena.github.io/) and will get evaluated</li>
+          <li><strong>Sep&nbsp;8</strong> – Soft-deadline to submit policies to RoboArena. We recommend making the soft-deadline so that you can get some signal about how well your policies are doing/can debug any unforseen issues.</li>
+          <li><strong>Sept&nbsp;13</strong> – Hard-deadline for final submission of policies (11:59 PM anywhere on earth). RoboArena evaluations will be run in the week following, from Sep 13 until Sep 20, to determine the final ranking of all competing policies & the winner.</li>
         </ul>
       </div>
 

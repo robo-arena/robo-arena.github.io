@@ -22,7 +22,8 @@
   padding: 10px;
 }
 
-.lb-table .right  { text-align: right;  padding-right: 10x;}
+/* keep as-is per your note */
+.lb-table .right  { text-align: right;  padding-right: 10x;} /* 10x is a typo technically, but it looks fine so whatever */
 
 .lb-table tbody tr:nth-child(even) { background: #fafafa; }
 .lb-table tbody tr:hover           { background: #fff3e6; }
@@ -43,5 +44,26 @@
 .lb-table td.oss-cell {
   text-align: right;      /* push toward header edge  */
   padding-right: 50px;    /* tweak until it looks good */
-  width: 150px;            /* fixed width keeps layout stable (adjust if needed) */
+  width: 150px;           /* fixed width keeps layout stable (adjust if needed) */
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Column-specific tweaks (by position)
+   Columns: 1 Rank, 2 Policy, 3 Score, 4 SD, 5 A/B Evals, 6 Open Source
+   ────────────────────────────────────────────────────────────── */
+
+/* More separation between Score (3) and SD (4) */
+.lb-table th:nth-child(3),
+.lb-table td:nth-child(3) {  /* Score */
+  padding-right: 18px;       /* was ~10px; adds extra gap before SD */
+}
+.lb-table th:nth-child(4),
+.lb-table td:nth-child(4) {  /* SD */
+  padding-left: 24px;        /* add a bit of space from Score column */
+}
+
+/* Nudge A/B Evals (5) slightly to the right (right-aligned → reduce padding-right) */
+.lb-table th:nth-child(5),
+.lb-table td:nth-child(5) {  /* A/B Evals */
+  padding-right: 6px;        /* a touch less than 10px moves content right */
 }

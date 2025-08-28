@@ -21,7 +21,7 @@ export default function PolicyAnalysisReport() {
     <section className="analysis-section" style={{ marginTop: '3rem' }}>
       <h3 className="analysis-title">AI-Generated Policy Analysis Reports</h3>
         <p  className="analysis-updated">
-            Last updated&nbsp;5/26/2025
+            Last updated&nbsp;8/27/2025
         </p>
       <p className="analysis-desc" style={{ textAlign: 'right', marginBottom: '0.5rem', fontWeight: 300 }}>Click '+' to expand and see video citations.</p>
 

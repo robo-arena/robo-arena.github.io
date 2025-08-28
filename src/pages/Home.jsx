@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import paperPdf from '../assets/roboarena.pdf'
+/* import paperPdf from '../assets/roboarena.pdf'   ---> we switched to providing an arxiv link */
 import methodImg from '../assets/method_overview.jpeg';
 import trainingImg from '../assets/training.png';
 import evaluationImg from '../assets/eval.png';
@@ -9,6 +9,10 @@ import discordImg from '../assets/discord.svg';
 import { HiOutlineDatabase } from 'react-icons/hi'
 import '../css/theme.css'
 import './home.css'               // small local styles
+
+const arxivId = "2506.18123"; // <-- your paper’s arXiv ID
+const arxivUrl = `https://arxiv.org/abs/${arxivId}`; // abstract page
+const pdfUrl = `https://arxiv.org/pdf/${arxivId}.pdf`; // pdf
 
 /* ---------- quick helpers ---------- */
 const authors = [
@@ -101,10 +105,11 @@ export default function Home() {
       {/* Quick-links grid */}
       <div className="link-grid">
         <a
-          href={paperPdf}
+          href={arxivUrl}
           className="link-card"
           target="_blank"
           rel="noopener noreferrer"
+          aria-label="Read the paper on arXiv"
         >
           <span className="icon">📄</span>
           Paper
@@ -190,8 +195,8 @@ export default function Home() {
           requirement is that evaluations are done pairwise, maintaining the same task and environment for the policies in the pair.
           By aggregating a large number of double-blind, pairwise evaluations across a network of institutions, 
           we can <strong>considerably scale evaluation diversity</strong>,
-          which we&nbsp;<a href={paperPdf} target="_blank" rel="noopener noreferrer">
-          show</a>&nbsp;is essential to comprehensively evaluate <em>generalist</em> policies. 
+          which we&nbsp;<a href={pdfUrl} target="_blank" rel="noopener noreferrer">show</a>
+          &nbsp;is essential to comprehensively evaluate <em>generalist</em> policies. 
           The RoboArena benchmark will be running live through 2025, with potential extensions beyond.
         </p>
       </section>
@@ -344,29 +349,37 @@ export default function Home() {
       </section>
 
       <section className="section">
-        <h2 id="citation-section" className="section-title" style={{textAlign: 'center', marginBottom: '1rem', fontSize: '2rem'}}>Citation</h2>
-        <div style={{maxWidth: '800px', margin: '0 auto', padding: '1rem'}}>
-          <p style={{marginBottom: '1rem', textAlign: 'left'}}>
-            If you find this work useful in your research, please consider citing:
-          </p>
-          <pre style={{
-            background: '#f5f5f5',
-            padding: '1rem',
-            borderRadius: '4px',
-            overflowX: 'auto',
-            fontSize: '0.9rem',
-            lineHeight: '1.4',
-            textAlign: 'left'
-          }}>
-{`@article{atreya2025roboarena,
-  title={RoboArena: Distributed Real-World Evaluation of Generalist Robot Policies},
-  author={Atreya, Pranav and Pertsch, Karl and Lee, Tony and Kim, Moo Jin and Jain, Arhan and Kuramshin, Artur and Eppner, Clemens and Neary, Cyrus and Hu, Edward and Ramos, Fabio and Tremblay, Jonathan and Arora, Kanav and Ellis, Kirsty and Macesanu, Luca and Leonard, Matthew and Cho, Meedeum and Aslan, Ozgur and Dass, Shivin and Wang, Jie and Yuan, Xingfang and Yang, Xuning and Gupta, Abhishek and Jayaraman, Dinesh and Berseth, Glen and Daniilidis, Kostas and Martin-Martin, Roberto and Lee, Youngwoon and Liang, Percy and Finn, Chelsea and Levine, Sergey},
-  journal={arXiv preprint},
-  year={2025}
-}`}
-          </pre>
-        </div>
-      </section>
+  <h2
+    id="citation-section"
+    className="section-title"
+    style={{ textAlign: 'center', marginBottom: '0.5rem', fontSize: '2rem' }}
+  >
+    Citation
+  </h2>
+  <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 1rem 1rem' }}>
+    <p style={{ marginTop: 0, marginBottom: '0.75rem', textAlign: 'left' }}>
+      If you find this work useful in your research, please consider citing:
+    </p>
+    <pre
+      style={{
+        background: '#f5f5f5',
+        padding: '1rem',
+        borderRadius: '4px',
+        overflowX: 'auto',
+        fontSize: '0.9rem',
+        lineHeight: '1.4',
+        textAlign: 'left',
+        marginTop: 0, // avoid extra gap above <pre>
+      }}
+    >{`@inproceedings{atreya2025roboarena,
+  title = {RoboArena: Distributed Real-World Evaluation of Generalist Robot Policies},
+  author = {Atreya, Pranav and Pertsch, Karl and Lee, Tony and Kim, Moo Jin and Jain, Arhan and Kuramshin, Artur and Eppner, Clemens and Neary, Cyrus and Hu, Edward and Ramos, Fabio and others},
+  booktitle = {Proceedings of the Conference on Robot Learning (CoRL 2025)},
+  year = {2025}
+}`}</pre>
+  </div>
+</section>
+
 
     </div>
   )

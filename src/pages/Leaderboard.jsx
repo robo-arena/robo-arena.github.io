@@ -55,6 +55,7 @@ export default function Leaderboard() {
               <th>Policy</th>
               <th className="right">Score</th>
               <th className="right">SD</th>
+              <th className="right"># A/B&nbsp;Evals</th>
               {/* right-aligned header  ↓ */}
               <th className="right">Open&nbsp;Source</th>
             </tr>
@@ -66,6 +67,9 @@ export default function Leaderboard() {
                 <td>{r.policy}</td>
                 <td className="right">{r.score}</td>
                 <td className="right">{r.std}</td>
+                <td className="right">
+                  {typeof r.num_evals === 'number' ? r.num_evals.toLocaleString() : '—'}
+                </td>
                 {/* centre the ✔ without drifting left ↓ */}
                 <td className="oss-cell">{r.open_source ? '✔️' : ''}</td>
               </tr>
