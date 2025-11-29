@@ -35,6 +35,7 @@ const authors = [
   { name: 'Ozgur Aslan',       uni: 4, equal: false  },
   { name: 'Shivin Dass',       uni: 7, equal: false  },
   { name: 'Jie Wang',       uni: 6, equal: false  },
+  { name: 'William Reger',       uni: 7, equal: false  },
   { name: 'Xingfang Yuan',       uni: 6, equal: false  },
   { name: 'Xuning Yang',       uni: 5, equal: false  },
   { name: 'Abhishek Gupta',       uni: 3, equal: false  },
