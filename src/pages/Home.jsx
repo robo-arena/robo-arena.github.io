@@ -199,7 +199,7 @@ export default function Home() {
           we can <strong>considerably scale evaluation diversity</strong>,
           which we&nbsp;<a href={pdfUrl} target="_blank" rel="noopener noreferrer">show</a>
           &nbsp;is essential to comprehensively evaluate <em>generalist</em> policies. 
-          The RoboArena benchmark will be running live through 2025, with potential extensions beyond.
+          The RoboArena benchmark will be running live through Dec 2026, with potential extensions beyond.
         </p>
       </section>
 
