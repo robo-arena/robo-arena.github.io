@@ -30,6 +30,7 @@ const authors = [
   { name: 'Kanav Arora',       uni: 3, equal: false  },
   { name: 'Kirsty Ellis',       uni: 4, equal: false  },
   { name: 'Luca Macesanu',       uni: 7, equal: false  },
+  { name: 'Marcel Torne Villasevil',       uni: 2, equal: false  },
   { name: 'Matthew Leonard',       uni: 6, equal: false  },
   { name: 'Meedeum Cho',       uni: 8, equal: false  },
   { name: 'Ozgur Aslan',       uni: 4, equal: false  },
