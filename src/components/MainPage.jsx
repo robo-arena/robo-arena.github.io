@@ -57,12 +57,7 @@ export default function MainPage() {
           Join as an Evaluator
         </NavLink>
 
-                {<NavLink
-          to="/challenge"
-          className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}
-        >
-          CoRL Challenge
-        </NavLink>}
+
 
         <NavLink
           to="https://huggingface.co/datasets/RoboArena/DataDump_08-05-2025"

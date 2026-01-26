@@ -148,11 +148,6 @@ export default function Home() {
         Evaluator
         </Link>
 
-        {<Link to="/challenge" className="link-card">
-          <span className="icon">🚀</span>
-          CoRL Challenge
-        </Link>}
-
         <Link
           to="https://huggingface.co/datasets/RoboArena/DataDump_08-05-2025"
           className="link-card"
