@@ -5,8 +5,6 @@ import MainPage   from './components/MainPage.jsx';
 import IntroSplash from './components/IntroSplash.jsx';
 import useAutoScale from './useAutoScale.js';
 
-const PHONE_MAX = 1200;   // px – your cutoff
-
 export default function App() {
   useAutoScale(700);
 
@@ -14,9 +12,9 @@ export default function App() {
   const { pathname } = useLocation();
   const onHome = pathname === "/";
 
-  // 1️⃣  Initial decision: show splash only if not phone-sized
+  // 1️⃣  Show splash on initial home-page load (desktop + mobile)
   const [showSplash, setShowSplash] = useState(
-    onHome && window.innerWidth >= PHONE_MAX
+    onHome
   );
 
   /* lock scrolling while splash is up */
@@ -29,15 +27,10 @@ export default function App() {
     if (window.scrollY > 10) setShowSplash(false);
   }, []);
 
-  /* 2️⃣  While splash is visible, dismiss it on window resize */
+  /* close splash if user navigates off home route */
   useEffect(() => {
-    if (!showSplash) return;             // listener only active when needed
-    function handleResize() {
-      if (window.innerWidth < PHONE_MAX) setShowSplash(false);
-    }
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [showSplash]);
+    if (!onHome && showSplash) setShowSplash(false);
+  }, [onHome, showSplash]);
 
   return (
     <>

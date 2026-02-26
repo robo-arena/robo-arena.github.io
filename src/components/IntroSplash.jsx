@@ -4,8 +4,11 @@ import introVideo from '../assets/intro.mp4';
 
 export default function IntroSplash({ onDone }) {
   const ref = useRef(null);
+  const doneRef = useRef(false);
   const [offset, setOffset] = useState(0);       // px the splash has moved up
   const full = window.innerHeight;               // one viewport = done
+  const isMobile = window.matchMedia('(max-width: 900px)').matches;
+  const autoDismissMs = isMobile ? 4500 : 7000;
 
   /* — update the element’s transform — */
   useEffect(() => {
@@ -41,6 +44,9 @@ export default function IntroSplash({ onDone }) {
 
   /* — exit routine (shared by scroll-to-top and timer) — */
   const finish = () => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+
     if (ref.current && !ref.current.classList.contains('slide-up'))
       ref.current.classList.add('slide-up');   // animate the last bit
     /* ensure the main page starts at the very top */
@@ -55,7 +61,7 @@ export default function IntroSplash({ onDone }) {
 
   /* — set up listeners + 7-second auto-finish — */
   useEffect(() => {
-    const t = setTimeout(finish, 7000);        // auto exit
+    const t = setTimeout(finish, autoDismissMs);        // auto exit
     window.addEventListener('wheel', wheel, { passive: false });
     window.addEventListener('touchmove', touchMove, { passive: false });
     window.addEventListener('touchend', touchEnd);
@@ -69,7 +75,7 @@ export default function IntroSplash({ onDone }) {
 
   /* — render — */
   return (
-    <div className="splash-container" ref={ref}>
+    <div className={`splash-container${isMobile ? ' splash-mobile' : ''}`} ref={ref}>
       <video
         className="splash-video"
         src={introVideo}
@@ -82,6 +88,10 @@ export default function IntroSplash({ onDone }) {
         <span className="robo">Robo</span>
         <span className="arena">Arena</span>
       </h1>
+      <button className="splash-skip" onClick={finish} aria-label="Skip intro">
+        Skip
+      </button>
+      {isMobile && <p className="splash-hint">Swipe up to continue</p>}
     </div>
   );
 }

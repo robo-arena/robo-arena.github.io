@@ -293,6 +293,15 @@
     max-width: 700px;
     margin: 1.5rem auto;
     padding: 0 0.75rem;
+    overflow-x: hidden;
+  }
+
+  .home-wrap p,
+  .home-wrap li,
+  .home-wrap span,
+  .home-wrap a {
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .paper-title {
@@ -356,6 +365,7 @@
     align-items: stretch;
     gap: 1rem;
     padding: 1rem;
+    overflow: hidden;
   }
 
   .process-img-wrap {

@@ -260,11 +260,24 @@ html, body { overflow-x: hidden; }
     --scale: calc(100vw / 1200);
   }
 
+  #root {
+    width: 100vw;
+    overflow-x: hidden;
+  }
+
+  body {
+    align-items: flex-start;
+  }
+
   #zoom-wrapper {
     transform: scale(var(--app-scale));
     transform-origin: top left;
-    width: calc(100% / var(--app-scale));
+    width: calc(100vw / var(--app-scale));
     height: calc(100% / var(--app-scale));
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
   }
 
   .navbar { display: none; }

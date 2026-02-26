@@ -106,3 +106,56 @@
   background: rgba(0, 0, 0, 0.25);  /* 35 % black; tweak alpha */
   pointer-events: none;             /* let clicks pass through */
 }
+
+.splash-skip {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top));
+  right: 12px;
+  z-index: 2;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1;
+  backdrop-filter: blur(2px);
+}
+
+.splash-skip:hover {
+  background: rgba(0, 0, 0, 0.58);
+  border-color: rgba(255, 255, 255, 0.85);
+}
+
+.splash-hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  margin: 0;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 900px) {
+  .splash-mobile .splash-video {
+    object-position: center center;
+    filter: brightness(72%);
+  }
+
+  .splash-mobile .splash-overlay {
+    background:
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.38)),
+      rgba(0, 0, 0, 0.12);
+  }
+
+  .splash-mobile .splash-text {
+    width: 100%;
+    padding: 0 1rem;
+    text-align: center;
+    font-size: clamp(3rem, 16vw, 5.8rem);
+    letter-spacing: 1px;
+  }
+}
