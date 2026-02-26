@@ -287,3 +287,102 @@
   margin-left: 3.0rem;  /* ← nudge the whole heading to the right */
   /* you can tweak this to 1rem, 2rem, etc. */
 }
+
+@media (max-width: 900px) {
+  .home-wrap {
+    max-width: 700px;
+    margin: 1.5rem auto;
+    padding: 0 0.75rem;
+  }
+
+  .paper-title {
+    font-size: 2.15rem;
+    line-height: 1.2;
+  }
+
+  .author-line {
+    max-width: 100%;
+    font-size: 0.9rem;
+  }
+
+  .footnotes {
+    max-width: 100%;
+    gap: 0.35rem 0.75rem;
+  }
+
+  .footnotes li {
+    white-space: normal;
+  }
+
+  .link-grid {
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    max-width: 100%;
+  }
+
+  .link-card {
+    width: calc(50% - 0.5rem);
+    min-width: 140px;
+    max-width: 180px;
+    height: 108px;
+    font-size: 0.82rem;
+  }
+
+  .icon {
+    font-size: 2.2rem;
+  }
+
+  .tldr-wrap {
+    margin: 1.75rem auto 1.5rem;
+    padding: 1rem;
+  }
+
+  .body-section {
+    margin-top: 2.5rem;
+  }
+
+  .body-section p {
+    font-size: 1rem;
+  }
+
+  .section-title {
+    margin-left: 0;
+    text-align: center;
+  }
+
+  .card-content,
+  .card-content.reverse {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .process-img-wrap {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .process-text {
+    width: 100%;
+  }
+
+  .process-text p {
+    font-size: 1rem;
+  }
+
+  .resources-container {
+    flex-direction: column;
+    max-width: 100%;
+    gap: 1rem;
+    padding: 0;
+  }
+
+  .resource-card {
+    padding: 1.25rem;
+  }
+
+  .resource-card p {
+    font-size: 0.98rem;
+  }
+}

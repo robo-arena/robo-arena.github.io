@@ -22,7 +22,7 @@ export default function Leaderboard() {
   const visible = ossOnly ? board.filter((r) => r.open_source) : board;
 
   return (
-    <div style={{ maxWidth: 1000, margin: '2rem auto', padding: '0 1rem' }}>
+    <div className="leaderboard-wrap">
       <h2 style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
         Policy Leaderboard
       </h2>
@@ -48,34 +48,36 @@ export default function Leaderboard() {
       {visible.length === 0 ? (
         <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading…</p>
       ) : (
-        <table className="lb-table">
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Policy</th>
-              <th className="right">Score</th>
-              <th className="right">SD</th>
-              <th className="right"># A/B&nbsp;Evals</th>
-              {/* right-aligned header  ↓ */}
-              <th className="right">Open&nbsp;Source</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map((r, idx) => (          /* ← use filtered list */
-              <tr key={r.policy}>
-                <td className="left">{idx + 1}</td>
-                <td>{r.policy}</td>
-                <td className="right">{r.score}</td>
-                <td className="right">{r.std}</td>
-                <td className="right">
-                  {typeof r.num_evals === 'number' ? r.num_evals.toLocaleString() : '—'}
-                </td>
-                {/* centre the ✔ without drifting left ↓ */}
-                <td className="oss-cell">{r.open_source ? '✔️' : ''}</td>
+        <div className="lb-table-wrap">
+          <table className="lb-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Policy</th>
+                <th className="right">Score</th>
+                <th className="right">SD</th>
+                <th className="right"># A/B&nbsp;Evals</th>
+                {/* right-aligned header  ↓ */}
+                <th className="right">Open&nbsp;Source</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {visible.map((r, idx) => (          /* ← use filtered list */
+                <tr key={r.policy}>
+                  <td className="left">{idx + 1}</td>
+                  <td>{r.policy}</td>
+                  <td className="right">{r.score}</td>
+                  <td className="right">{r.std}</td>
+                  <td className="right">
+                    {typeof r.num_evals === 'number' ? r.num_evals.toLocaleString() : '—'}
+                  </td>
+                  {/* centre the ✔ without drifting left ↓ */}
+                  <td className="oss-cell">{r.open_source ? '✔️' : ''}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       <PolicyAnalysisReport />

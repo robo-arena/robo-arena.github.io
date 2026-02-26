@@ -1,3 +1,13 @@
+.leaderboard-wrap {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.lb-table-wrap {
+  width: 100%;
+}
+
 /* prettier leaderboard table */
 .lb-table {
   width: 100%;
@@ -66,4 +76,54 @@
 .lb-table th:nth-child(5),
 .lb-table td:nth-child(5) {  /* A/B Evals */
   padding-right: 6px;        /* a touch less than 10px moves content right */
+}
+
+@media (max-width: 700px) {
+  .leaderboard-wrap {
+    padding: 0 0.5rem;
+  }
+
+  .lb-filter {
+    text-align: left;
+    margin-top: 0.75rem;
+  }
+
+  .lb-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .lb-table {
+    min-width: 620px;
+    margin: 1rem auto;
+    font-size: 0.92rem;
+  }
+
+  .lb-table thead th {
+    padding: 8px 6px;
+  }
+
+  .lb-table tbody td {
+    padding: 8px 6px;
+  }
+
+  .lb-table td.oss-cell {
+    width: auto;
+    padding-right: 8px;
+  }
+
+  .lb-table th:nth-child(3),
+  .lb-table td:nth-child(3) {
+    padding-right: 10px;
+  }
+
+  .lb-table th:nth-child(4),
+  .lb-table td:nth-child(4) {
+    padding-left: 10px;
+  }
+
+  .lb-table td:nth-child(2) {
+    max-width: 220px;
+    word-break: break-word;
+  }
 }
