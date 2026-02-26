@@ -80,7 +80,7 @@
 
 @media (max-width: 700px) {
   .leaderboard-wrap {
-    padding: 0 0.5rem;
+    padding: 0 calc(12px / var(--app-scale, 1));
   }
 
   .lb-filter {
