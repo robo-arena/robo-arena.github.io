@@ -1,23 +1,31 @@
 import { useEffect, useState, useRef } from 'react'
 import EvaluationCard from '../components/EvaluationCard.jsx'
 import '../css/theme.css'
-import { apiGet } from '../api';
+import { apiGetJson } from '../api';
 
 export default function ResultsPage() {
+  const initialQuery = (() => {
+    try {
+      return new URLSearchParams(window.location.search).get('q') ?? '';
+    } catch {
+      return '';
+    }
+  })();
+
   /* ------------------------------------------------------------------ */
   /* state                                                               */
   /* ------------------------------------------------------------------ */
   const [allEvals, setAllEvals] = useState([])
   const [shown, setShown] = useState(10)
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(initialQuery)
+  const [shareStatus, setShareStatus] = useState('idle')
   const loaderRef = useRef(null)
 
   /* ------------------------------------------------------------------ */
   /* data fetch helper                                                   */
   /* ------------------------------------------------------------------ */
   const fetchData = () =>
-    apiGet('/list_ab_evaluations')
-      .then((r) => r.json())
+    apiGetJson('/list_ab_evaluations')
       .then((d) => setAllEvals(d.evaluations))
       .catch(console.error)
 
@@ -46,22 +54,37 @@ export default function ResultsPage() {
     .split(/\s+/)
     .filter(Boolean)
 
+  const sessionTokens = tokens
+    .filter((t) => t.startsWith('sid:') || t.startsWith('session:'))
+    .map((t) => t.split(':').slice(1).join(':').trim())
+    .filter(Boolean)
+
   /* special “tie” keyword → show only ties */
   const wantTieOnly = tokens.some((t) => ['tie', 'ties', 'tie:'].includes(t))
   const tokensWithoutTie = tokens.filter(
     (t) => !['tie', 'ties', 'tie:'].includes(t)
   )
+  const genericTokens = tokensWithoutTie.filter(
+    (t) => !t.startsWith('sid:') && !t.startsWith('session:')
+  )
 
   const filtered = allEvals.filter((e) => {
     if (wantTieOnly && (e.preference ?? '').toUpperCase() !== 'TIE') return false
+    if (
+      sessionTokens.length > 0 &&
+      !sessionTokens.every((needle) =>
+        (e.session_id ?? '').toLowerCase().includes(needle)
+      )
+    ) return false
 
     /* logical AND across all remaining tokens */
-    return tokensWithoutTie.every((tok) =>
+    return genericTokens.every((tok) =>
       [
         e.university,
         e.evaluator_name ?? '',
         e.policyA.name,
         e.policyB.name,
+        e.session_id ?? '',
         new Date(e.completion_time).toLocaleString(),
       ]
         .map((s) => s.toLowerCase())
@@ -75,6 +98,47 @@ export default function ResultsPage() {
   )
 
   const visible = sorted.slice(0, shown)
+
+  const copyToClipboard = async (text) => {
+    if (!text) return false;
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      try {
+        const el = document.createElement('textarea');
+        el.value = text;
+        el.setAttribute('readonly', '');
+        el.style.position = 'fixed';
+        el.style.left = '-9999px';
+        document.body.appendChild(el);
+        el.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(el);
+        return ok;
+      } catch {
+        return false;
+      }
+    }
+  };
+
+  const buildResultsLink = (searchQuery) => {
+    const url = new URL('/results', window.location.origin);
+    const trimmed = (searchQuery ?? '').trim();
+    if (trimmed) url.searchParams.set('q', trimmed);
+    return url.toString();
+  };
+
+  const copySearchLink = async (searchQuery) => {
+    const ok = await copyToClipboard(buildResultsLink(searchQuery));
+    return ok;
+  };
+
+  const handleCopyCurrentSearch = async () => {
+    const ok = await copySearchLink(query);
+    setShareStatus(ok ? 'copied' : 'error');
+    window.setTimeout(() => setShareStatus('idle'), 1800);
+  };
 
   /* ------------------------------------------------------------------ */
   /* render                                                              */
@@ -120,6 +184,25 @@ export default function ResultsPage() {
           Reset
         </button>
 
+        <button
+          style={{
+            padding: '0.45rem 0.9rem',
+            fontWeight: 400,
+            cursor: 'pointer',
+            background: '#004080',
+            color: '#ffffff',
+            border: '1px solid #003460',
+          }}
+          title="Copy link to current filtered view"
+          onClick={handleCopyCurrentSearch}
+        >
+          {shareStatus === 'copied'
+            ? 'Copied!'
+            : shareStatus === 'error'
+              ? 'Copy failed'
+              : 'Copy Link'}
+        </button>
+
         {/* Refresh — dark blue background */}
         <button
           style={{
@@ -146,7 +229,11 @@ export default function ResultsPage() {
       )}
 
       {visible.map((ev) => (
-        <EvaluationCard key={ev.session_id} evalData={ev} />
+        <EvaluationCard
+          key={ev.session_id}
+          evalData={ev}
+          onShare={async () => copySearchLink(`sid:${ev.session_id}`)}
+        />
       ))}
 
       {/* sentinel for IntersectionObserver */}

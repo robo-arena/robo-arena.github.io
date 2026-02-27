@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import '../css/theme.css'
 
-export default function EvaluationCard({ evalData }) {
+export default function EvaluationCard({ evalData, onShare }) {
   const {
     completion_time,
     university,
@@ -13,24 +13,23 @@ export default function EvaluationCard({ evalData }) {
     policyB,
   } = evalData
 
-  const cardRef = useRef(null)
-  const [visible, setVisible] = useState(false) // in viewport?
   const [open, setOpen] = useState(false)       // accordion expanded?
-
-  /* viewport detector */
-  useEffect(() => {
-    const io = new IntersectionObserver(
-      ([e]) => e.isIntersecting && setVisible(true),
-      { threshold: 0.15 }
-    )
-    if (cardRef.current) io.observe(cardRef.current)
-    return () => io.disconnect()
-  }, [])
+  const [shareCopied, setShareCopied] = useState(false)
 
   const fmtDate = new Date(completion_time).toLocaleString()
 
+  const handleShareClick = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!onShare) return;
+    const ok = await onShare();
+    if (!ok) return;
+    setShareCopied(true);
+    window.setTimeout(() => setShareCopied(false), 1600);
+  };
+
   return (
-    <div className="evaluation-card" ref={cardRef}>
+    <div className="evaluation-card">
       {/* HEADER (always visible) */}
       <button
         className="card-toggle"
@@ -85,7 +84,22 @@ export default function EvaluationCard({ evalData }) {
             </div>
           )}
         </div>
-        <span className="toggle-icon">{open ? '➖' : '➕'}</span>
+        <span className="header-actions">
+          <span
+            className="share-icon"
+            role="button"
+            tabIndex={0}
+            title={shareCopied ? 'Link copied' : 'Copy link for this evaluation'}
+            aria-label={shareCopied ? 'Link copied' : 'Copy link for this evaluation'}
+            onClick={handleShareClick}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') handleShareClick(e);
+            }}
+          >
+            {shareCopied ? '✅' : '🔗'}
+          </span>
+          <span className="toggle-icon">{open ? '➖' : '➕'}</span>
+        </span>
       </button>
 
       {/* ACCORDION BODY */}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import '../css/theme.css';
 import './leaderboard.css';          // 💡 add a page-specific stylesheet
 import PolicyAnalysisReport from '../components/PolicyAnalysisReport.jsx';
-import { apiGet } from '../api';
+import { apiGetJson } from '../api';
 
 export default function Leaderboard() {
   const [board, setBoard] = useState([]);
@@ -10,8 +10,7 @@ export default function Leaderboard() {
   const [ossOnly, setOssOnly] = useState(false);
 
   useEffect(() => {
-    apiGet('/leaderboard')
-      .then((r) => r.json())
+    apiGetJson('/leaderboard')
       .then((d) => {
         setBoard(d.board);
         setUpdated(d.last_updated);

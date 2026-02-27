@@ -116,6 +116,30 @@ a {
 .card-toggle:hover { opacity: 0.8; }
 .toggle-icon { font-size: 1.1rem; line-height: 1; }
 
+.header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.share-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 4px;
+  border: 1px solid rgba(0 0 0 / 18%);
+  background: #f2f7ff;
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.share-icon:hover {
+  background: #dcecff;
+}
+
 /* --- Collapsed header content --- */
 .header-content { display: flex; flex-direction: column; gap: 4px; text-align: left; flex: 1 1 auto; }
 .header-line { font-size: 1.05rem; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
