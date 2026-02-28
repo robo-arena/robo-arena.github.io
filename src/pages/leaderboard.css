@@ -39,9 +39,19 @@
 .lb-table tbody tr:hover           { background: #fff3e6; }
 
 .lb-filter {
-  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
   margin: 0.5rem 0 0.6rem 0;
   font-size: 0.95rem;
+}
+
+.lb-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
 }
 
 .lb-table th.right   { text-align: right;  }
@@ -78,13 +88,119 @@
   padding-right: 6px;        /* a touch less than 10px moves content right */
 }
 
+.lb-chart-panel {
+  position: relative;
+  margin: 1.5rem auto;
+  border-radius: 8px;
+  border: 1px solid #ececec;
+  background: #fff;
+  box-shadow: 0 2px 8px hsl(0 0% 0% / 10%);
+  padding: 0.9rem 0.9rem 0.5rem;
+}
+
+.lb-chart-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.35rem;
+}
+
+.lb-chart-svg {
+  display: block;
+}
+
+.lb-grid-line {
+  stroke: #e9edf3;
+  stroke-width: 1;
+}
+
+.lb-axis-line {
+  stroke: #6d7b8b;
+  stroke-width: 1.35;
+}
+
+.lb-axis-title {
+  fill: #30465e;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.lb-ytick-label {
+  fill: #63778e;
+  font-size: 12px;
+}
+
+.lb-line-area {
+  fill: url(#lb-area-gradient);
+}
+
+.lb-line-path {
+  fill: none;
+  stroke: #f59749;
+  stroke-width: 3;
+}
+
+.lb-error-bar,
+.lb-error-cap {
+  stroke: #547495;
+  stroke-width: 1.5;
+}
+
+.lb-point {
+  fill: #145ca8;
+  stroke: #fff;
+  stroke-width: 2;
+  cursor: pointer;
+}
+
+.lb-point:hover {
+  fill: #0f477f;
+}
+
+.lb-point-label {
+  fill: #2d3f53;
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.lb-chart-tooltip {
+  position: absolute;
+  transform: translate(12px, -112%);
+  min-width: 185px;
+  max-width: 260px;
+  background: #14273b;
+  color: #fff;
+  border: 1px solid #20486d;
+  border-radius: 8px;
+  padding: 0.6rem 0.72rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.lb-tooltip-title {
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+  font-size: 0.88rem;
+}
+
+.lb-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  font-size: 0.8rem;
+  margin-top: 0.18rem;
+}
+
 @media (max-width: 700px) {
   .leaderboard-wrap {
     padding: 0 calc(12px / var(--app-scale, 1));
   }
 
   .lb-filter {
-    text-align: left;
+    justify-content: flex-start;
+    flex-wrap: wrap;
     margin-top: 0.75rem;
   }
 
@@ -135,5 +251,15 @@
     max-width: 100%;
     overflow-wrap: anywhere;
     word-break: break-word;
+  }
+
+  .lb-chart-panel {
+    padding: 0.65rem 0.55rem 0.35rem;
+  }
+
+  .lb-chart-tooltip {
+    min-width: 165px;
+    max-width: 220px;
+    transform: translate(8px, -108%);
   }
 }

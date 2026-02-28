@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import '../css/theme.css';
 import './leaderboard.css';          // 💡 add a page-specific stylesheet
 import PolicyAnalysisReport from '../components/PolicyAnalysisReport.jsx';
@@ -8,6 +8,7 @@ export default function Leaderboard() {
   const [board, setBoard] = useState([]);
   const [updated, setUpdated] = useState(null);
   const [ossOnly, setOssOnly] = useState(false);
+  const [showChart, setShowChart] = useState(false);
 
   useEffect(() => {
     apiGetJson('/leaderboard')
@@ -19,6 +20,10 @@ export default function Leaderboard() {
   }, []);
 
   const visible = ossOnly ? board.filter((r) => r.open_source) : board;
+  const chartRows = useMemo(
+    () => [...visible].sort((a, b) => a.score - b.score),
+    [visible]
+  );
 
   return (
     <div className="leaderboard-wrap">
@@ -34,7 +39,15 @@ export default function Leaderboard() {
 
       {/* ------- filter toggle ------- */}
       <div className="lb-filter">
-        <label>
+        <label className="lb-toggle">
+          <input
+            type="checkbox"
+            checked={showChart}
+            onChange={(e) => setShowChart(e.target.checked)}
+          />{' '}
+          Show chart view
+        </label>
+        <label className="lb-toggle">
           <input
             type="checkbox"
             checked={ossOnly}
@@ -47,39 +60,251 @@ export default function Leaderboard() {
       {visible.length === 0 ? (
         <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading…</p>
       ) : (
-        <div className="lb-table-wrap">
-          <table className="lb-table">
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Policy</th>
-                <th className="right">Score</th>
-                <th className="right">SD</th>
-                <th className="right"># A/B&nbsp;Evals</th>
-                {/* right-aligned header  ↓ */}
-                <th className="right">Open&nbsp;Source</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((r, idx) => (          /* ← use filtered list */
-                <tr key={r.policy}>
-                  <td className="left">{idx + 1}</td>
-                  <td>{r.policy}</td>
-                  <td className="right">{r.score}</td>
-                  <td className="right">{r.std}</td>
-                  <td className="right">
-                    {typeof r.num_evals === 'number' ? r.num_evals.toLocaleString() : '—'}
-                  </td>
-                  {/* centre the ✔ without drifting left ↓ */}
-                  <td className="oss-cell">{r.open_source ? '✔️' : ''}</td>
+        showChart ? (
+          <LeaderboardChart rows={chartRows} />
+        ) : (
+          <div className="lb-table-wrap">
+            <table className="lb-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Policy</th>
+                  <th className="right">Score</th>
+                  <th className="right">SD</th>
+                  <th className="right"># A/B&nbsp;Evals</th>
+                  {/* right-aligned header  ↓ */}
+                  <th className="right">Open&nbsp;Source</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {visible.map((r, idx) => (          /* ← use filtered list */
+                  <tr key={r.policy}>
+                    <td className="left">{idx + 1}</td>
+                    <td>{r.policy}</td>
+                    <td className="right">{r.score}</td>
+                    <td className="right">{r.std}</td>
+                    <td className="right">
+                      {typeof r.num_evals === 'number' ? r.num_evals.toLocaleString() : '—'}
+                    </td>
+                    {/* centre the ✔ without drifting left ↓ */}
+                    <td className="oss-cell">{r.open_source ? '✔️' : ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
       )}
 
       <PolicyAnalysisReport />
+    </div>
+  );
+}
+
+function LeaderboardChart({ rows }) {
+  const [tooltip, setTooltip] = useState(null);
+
+  const width = Math.max(920, rows.length * 64);
+  const height = 520;
+  const margin = { top: 26, right: 220, bottom: 45, left: 72 };
+  const plotWidth = width - margin.left - margin.right;
+  const plotHeight = height - margin.top - margin.bottom;
+
+  const stats = rows.reduce(
+    (acc, row) => {
+      const sd = Number(row.std) || 0;
+      const low = Number(row.score) - sd;
+      const high = Number(row.score) + sd;
+      return {
+        min: Math.min(acc.min, low),
+        max: Math.max(acc.max, high),
+      };
+    },
+    { min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY }
+  );
+  const span = Number.isFinite(stats.max - stats.min) ? stats.max - stats.min : 0;
+  const yPad = Math.max(16, span * 0.08);
+  const yMin = Number.isFinite(stats.min) ? stats.min - yPad : 0;
+  const yMax = Number.isFinite(stats.max) ? stats.max + yPad : 1;
+  const yDenom = Math.max(1e-9, yMax - yMin);
+
+  const xScale = (idx) =>
+    rows.length <= 1
+      ? margin.left + plotWidth / 2
+      : margin.left + (idx / (rows.length - 1)) * plotWidth;
+  const yScale = (value) => margin.top + ((yMax - value) / yDenom) * plotHeight;
+
+  const points = rows.map((row, idx) => {
+    const x = xScale(idx);
+    const y = yScale(Number(row.score));
+    const sd = Number(row.std) || 0;
+    return {
+      ...row,
+      idx,
+      x,
+      y,
+      yLow: yScale(Number(row.score) - sd),
+      yHigh: yScale(Number(row.score) + sd),
+    };
+  });
+
+  const linePath = points
+    .map((point, idx) => `${idx === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
+    .join(' ');
+  const areaPath = points.length
+    ? `${linePath} L ${points[points.length - 1].x} ${height - margin.bottom} L ${points[0].x} ${height - margin.bottom} Z`
+    : '';
+
+  const tickCount = 6;
+  const yTicks = Array.from({ length: tickCount + 1 }, (_, i) => yMin + (i / tickCount) * (yMax - yMin));
+
+  const showTooltip = (point) => {
+    setTooltip({
+      point,
+      xPct: (point.x / width) * 100,
+      yPct: (point.y / height) * 100,
+    });
+  };
+
+  return (
+    <div className="lb-chart-panel" onMouseLeave={() => setTooltip(null)}>
+      <div className="lb-chart-scroll">
+        <svg
+          className="lb-chart-svg"
+          viewBox={`0 0 ${width} ${height}`}
+          style={{ width: `${width}px`, height: 'auto' }}
+          role="img"
+          aria-label="Leaderboard chart with Elo score and standard deviation error bars"
+        >
+          <defs>
+            <linearGradient id="lb-area-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#f59749" stopOpacity="0.28" />
+              <stop offset="100%" stopColor="#f59749" stopOpacity="0.03" />
+            </linearGradient>
+          </defs>
+
+          {yTicks.map((tick, idx) => {
+            const y = yScale(tick);
+            return (
+              <g key={`grid-${idx}`}>
+                <line
+                  className="lb-grid-line"
+                  x1={margin.left}
+                  y1={y}
+                  x2={width - margin.right}
+                  y2={y}
+                />
+                <text
+                  className="lb-ytick-label"
+                  x={margin.left - 10}
+                  y={y + 4}
+                  textAnchor="end"
+                >
+                  {Math.round(tick)}
+                </text>
+              </g>
+            );
+          })}
+
+          <line
+            className="lb-axis-line"
+            x1={margin.left}
+            y1={margin.top}
+            x2={margin.left}
+            y2={height - margin.bottom}
+          />
+          <line
+            className="lb-axis-line"
+            x1={margin.left}
+            y1={height - margin.bottom}
+            x2={width - margin.right}
+            y2={height - margin.bottom}
+          />
+
+          <text
+            className="lb-axis-title"
+            x={24}
+            y={height / 2}
+            transform={`rotate(-90 24 ${height / 2})`}
+            textAnchor="middle"
+          >
+            Elo
+          </text>
+
+          {areaPath && <path d={areaPath} className="lb-line-area" />}
+          {linePath && <path d={linePath} className="lb-line-path" />}
+
+          {points.map((point) => {
+            const labelLeft = point.idx >= points.length - 3;
+            const yOffset = point.idx % 2 === 0 ? -8 : 14;
+            return (
+              <g key={point.policy}>
+                <line
+                  className="lb-error-bar"
+                  x1={point.x}
+                  y1={point.yLow}
+                  x2={point.x}
+                  y2={point.yHigh}
+                />
+                <line
+                  className="lb-error-cap"
+                  x1={point.x - 5}
+                  y1={point.yLow}
+                  x2={point.x + 5}
+                  y2={point.yLow}
+                />
+                <line
+                  className="lb-error-cap"
+                  x1={point.x - 5}
+                  y1={point.yHigh}
+                  x2={point.x + 5}
+                  y2={point.yHigh}
+                />
+                <circle
+                  className="lb-point"
+                  cx={point.x}
+                  cy={point.y}
+                  r={5.25}
+                  onMouseEnter={() => showTooltip(point)}
+                />
+                <text
+                  className="lb-point-label"
+                  x={labelLeft ? point.x - 8 : point.x + 8}
+                  y={point.y + yOffset}
+                  textAnchor={labelLeft ? 'end' : 'start'}
+                >
+                  {point.policy}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      {tooltip && (
+        <div
+          className="lb-chart-tooltip"
+          style={{ left: `${tooltip.xPct}%`, top: `${tooltip.yPct}%` }}
+        >
+          <div className="lb-tooltip-title">{tooltip.point.policy}</div>
+          <div className="lb-tooltip-row">
+            <span>Elo</span>
+            <strong>{tooltip.point.score}</strong>
+          </div>
+          <div className="lb-tooltip-row">
+            <span>Std</span>
+            <strong>{tooltip.point.std}</strong>
+          </div>
+          <div className="lb-tooltip-row">
+            <span># A/B Evals</span>
+            <strong>{tooltip.point.num_evals ?? '—'}</strong>
+          </div>
+          <div className="lb-tooltip-row">
+            <span>Open Source</span>
+            <strong>{tooltip.point.open_source ? 'Yes' : 'No'}</strong>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
