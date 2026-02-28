@@ -250,7 +250,7 @@ function LeaderboardChart({ rows, showLowEvalPolicies, onToggleLowEval }) {
           {linePath && <path d={linePath} className="lb-line-path" />}
 
           {points.map((point) => {
-            const labelX = point.x - labelDx;
+            const labelX = point.idx === 0 ? point.x + labelDx : point.x - labelDx;
             const labelY = point.y;
             return (
               <g key={point.policy}>
