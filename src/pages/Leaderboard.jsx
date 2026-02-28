@@ -136,8 +136,8 @@ function LeaderboardChart({ rows }) {
   const xStep = rows.length <= 1 ? plotWidth : plotWidth / (rows.length - 1);
   const denseLabels = xStep < 78;
   const labelOffsets = denseLabels
-    ? [-30, -12, 8, 26]
-    : [-20, -8, 8, 20];
+    ? [-16, -6, 6, 16]
+    : [-12, -4, 4, 12];
 
   const points = rows.map((row, idx) => {
     const x = xScale(idx);
@@ -274,7 +274,7 @@ function LeaderboardChart({ rows }) {
                 />
                 <text
                   className="lb-point-label"
-                  x={labelLeft ? point.x - 10 : point.x + 10}
+                  x={labelLeft ? point.x - 6 : point.x + 6}
                   y={point.y + yOffset}
                   textAnchor={labelLeft ? 'end' : 'start'}
                 >

@@ -158,11 +158,11 @@
 
 .lb-point-label {
   fill: #2d3f53;
-  font-size: 10.5px;
-  font-weight: 600;
+  font-size: 8px;
+  font-weight: 500;
   paint-order: stroke fill;
   stroke: #ffffff;
-  stroke-width: 3px;
+  stroke-width: 2px;
   stroke-linejoin: round;
   pointer-events: none;
 }
