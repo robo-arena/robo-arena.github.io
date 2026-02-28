@@ -119,7 +119,7 @@ function LeaderboardChart({ rows, showLowEvalPolicies, onToggleLowEval }) {
 
   const width = 1000;
   const height = 520;
-  const margin = { top: 26, right: 30, bottom: 45, left: 72 };
+  const margin = { top: 26, right: 30, bottom: 14, left: 72 };
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
 
@@ -146,8 +146,12 @@ function LeaderboardChart({ rows, showLowEvalPolicies, onToggleLowEval }) {
       ? margin.left + plotWidth / 2
       : margin.left + (idx / (rows.length - 1)) * plotWidth;
   const yScale = (value) => margin.top + ((yMax - value) / yDenom) * plotHeight;
+  const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
   const xStep = rows.length <= 1 ? plotWidth : plotWidth / (rows.length - 1);
   const labelDx = xStep < 78 ? 8 : 10;
+  const labelFontPx = 10.5;
+  const charWidthFactor = 0.58;
+  const labelPadPx = 4;
 
   const points = rows.map((row, idx) => {
     const x = xScale(idx);
@@ -251,7 +255,16 @@ function LeaderboardChart({ rows, showLowEvalPolicies, onToggleLowEval }) {
 
           {points.map((point) => {
             const labelX = point.idx === 0 ? point.x + labelDx : point.x - labelDx;
-            const labelY = point.y;
+            const estLabelLength = Math.max(
+              18,
+              (point.policy?.length ?? 0) * labelFontPx * charWidthFactor
+            );
+            const halfLabelSpan = estLabelLength / 2 + labelPadPx;
+            const minLabelY = margin.top + halfLabelSpan;
+            const maxLabelY = height - margin.bottom - halfLabelSpan;
+            const labelY = minLabelY <= maxLabelY
+              ? clamp(point.y, minLabelY, maxLabelY)
+              : margin.top + plotHeight / 2;
             return (
               <g key={point.policy}>
                 <line

@@ -199,8 +199,8 @@
 .lb-chart-footnote-wrap {
   display: flex;
   justify-content: center;
-  margin-top: 0.25rem;
-  padding-bottom: 0.2rem;
+  margin-top: 0.05rem;
+  padding-bottom: 0.35rem;
 }
 
 .lb-chart-footnote {
