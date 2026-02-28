@@ -99,10 +99,9 @@
 }
 
 .lb-chart-scroll {
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 0.35rem;
+  padding-bottom: 0.15rem;
 }
 
 .lb-chart-svg {

@@ -104,7 +104,7 @@ export default function Leaderboard() {
 function LeaderboardChart({ rows }) {
   const [tooltip, setTooltip] = useState(null);
 
-  const width = Math.max(960, rows.length * 86);
+  const width = 1000;
   const height = 520;
   const margin = { top: 26, right: 30, bottom: 45, left: 72 };
   const plotWidth = width - margin.left - margin.right;
@@ -177,7 +177,7 @@ function LeaderboardChart({ rows }) {
         <svg
           className="lb-chart-svg"
           viewBox={`0 0 ${width} ${height}`}
-          style={{ width: `max(100%, ${width}px)`, height: 'auto' }}
+          style={{ width: '100%', height: 'auto' }}
           role="img"
           aria-label="Leaderboard chart with Elo score and standard deviation error bars"
         >
@@ -240,7 +240,7 @@ function LeaderboardChart({ rows }) {
           {linePath && <path d={linePath} className="lb-line-path" />}
 
           {points.map((point) => {
-            const labelLeft = point.idx >= points.length - 1;
+            const labelLeft = point.idx >= points.length - 3;
             const yOffset = labelOffsets[point.idx % labelOffsets.length];
             return (
               <g key={point.policy}>
