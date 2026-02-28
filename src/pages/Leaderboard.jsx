@@ -9,6 +9,7 @@ export default function Leaderboard() {
   const [updated, setUpdated] = useState(null);
   const [ossOnly, setOssOnly] = useState(false);
   const [showChart, setShowChart] = useState(false);
+  const [showLowEvalPolicies, setShowLowEvalPolicies] = useState(false);
 
   useEffect(() => {
     apiGetJson('/leaderboard')
@@ -20,9 +21,17 @@ export default function Leaderboard() {
   }, []);
 
   const visible = ossOnly ? board.filter((r) => r.open_source) : board;
-  const chartRows = useMemo(
+  const chartRowsAll = useMemo(
     () => [...visible].sort((a, b) => a.score - b.score),
     [visible]
+  );
+  const chartRows = useMemo(
+    () => (
+      showLowEvalPolicies
+        ? chartRowsAll
+        : chartRowsAll.filter((row) => (Number(row.num_evals) || 0) >= 100)
+    ),
+    [chartRowsAll, showLowEvalPolicies]
   );
 
   return (
@@ -61,7 +70,11 @@ export default function Leaderboard() {
         <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading…</p>
       ) : (
         showChart ? (
-          <LeaderboardChart rows={chartRows} />
+          <LeaderboardChart
+            rows={chartRows}
+            showLowEvalPolicies={showLowEvalPolicies}
+            onToggleLowEval={() => setShowLowEvalPolicies((v) => !v)}
+          />
         ) : (
           <div className="lb-table-wrap">
             <table className="lb-table">
@@ -101,7 +114,7 @@ export default function Leaderboard() {
   );
 }
 
-function LeaderboardChart({ rows }) {
+function LeaderboardChart({ rows, showLowEvalPolicies, onToggleLowEval }) {
   const [tooltip, setTooltip] = useState(null);
 
   const width = 1000;
@@ -134,10 +147,7 @@ function LeaderboardChart({ rows }) {
       : margin.left + (idx / (rows.length - 1)) * plotWidth;
   const yScale = (value) => margin.top + ((yMax - value) / yDenom) * plotHeight;
   const xStep = rows.length <= 1 ? plotWidth : plotWidth / (rows.length - 1);
-  const denseLabels = xStep < 78;
-  const labelOffsets = denseLabels
-    ? [-12, -4, 4, 12]
-    : [-10, -3, 3, 10];
+  const labelDx = xStep < 78 ? 8 : 10;
 
   const points = rows.map((row, idx) => {
     const x = xScale(idx);
@@ -240,8 +250,8 @@ function LeaderboardChart({ rows }) {
           {linePath && <path d={linePath} className="lb-line-path" />}
 
           {points.map((point) => {
-            const labelLeft = point.idx >= points.length - 3;
-            const yOffset = labelOffsets[point.idx % labelOffsets.length];
+            const labelX = point.x - labelDx;
+            const labelY = point.y;
             return (
               <g key={point.policy}>
                 <line
@@ -274,10 +284,11 @@ function LeaderboardChart({ rows }) {
                 />
                 <text
                   className="lb-point-label"
-                  x={labelLeft ? point.x - 9 : point.x + 9}
-                  y={point.y + yOffset}
-                  textAnchor={labelLeft ? 'end' : 'start'}
-                  transform={`rotate(-90 ${labelLeft ? point.x - 9 : point.x + 9} ${point.y + yOffset})`}
+                  x={labelX}
+                  y={labelY}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  transform={`rotate(-90 ${labelX} ${labelY})`}
                 >
                   {point.policy}
                 </text>
@@ -311,6 +322,18 @@ function LeaderboardChart({ rows }) {
           </div>
         </div>
       )}
+
+      <div className="lb-chart-footnote-wrap">
+        <button
+          className="lb-chart-footnote"
+          type="button"
+          onClick={onToggleLowEval}
+        >
+          {showLowEvalPolicies
+            ? 'Showing policies with < 100 evals. Click to hide.'
+            : 'Policies with < 100 evals not shown. Click to show.'}
+        </button>
+      </div>
     </div>
   );
 }

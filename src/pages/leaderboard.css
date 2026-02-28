@@ -196,6 +196,29 @@
   margin-top: 0.18rem;
 }
 
+.lb-chart-footnote-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.25rem;
+  padding-bottom: 0.2rem;
+}
+
+.lb-chart-footnote {
+  border: none;
+  background: transparent;
+  color: #496685;
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  padding: 0.2rem 0.3rem;
+}
+
+.lb-chart-footnote:hover {
+  color: #2c4c6e;
+}
+
 @media (max-width: 700px) {
   .leaderboard-wrap {
     padding: 0 calc(12px / var(--app-scale, 1));
@@ -264,5 +287,10 @@
     min-width: 165px;
     max-width: 220px;
     transform: translate(8px, -108%);
+  }
+
+  .lb-chart-footnote {
+    font-size: 0.76rem;
+    text-align: center;
   }
 }
