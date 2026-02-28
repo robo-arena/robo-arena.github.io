@@ -104,9 +104,9 @@ export default function Leaderboard() {
 function LeaderboardChart({ rows }) {
   const [tooltip, setTooltip] = useState(null);
 
-  const width = Math.max(920, rows.length * 64);
+  const width = Math.max(960, rows.length * 86);
   const height = 520;
-  const margin = { top: 26, right: 220, bottom: 45, left: 72 };
+  const margin = { top: 26, right: 30, bottom: 45, left: 72 };
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
 
@@ -133,6 +133,11 @@ function LeaderboardChart({ rows }) {
       ? margin.left + plotWidth / 2
       : margin.left + (idx / (rows.length - 1)) * plotWidth;
   const yScale = (value) => margin.top + ((yMax - value) / yDenom) * plotHeight;
+  const xStep = rows.length <= 1 ? plotWidth : plotWidth / (rows.length - 1);
+  const denseLabels = xStep < 78;
+  const labelOffsets = denseLabels
+    ? [-30, -12, 8, 26]
+    : [-20, -8, 8, 20];
 
   const points = rows.map((row, idx) => {
     const x = xScale(idx);
@@ -172,7 +177,7 @@ function LeaderboardChart({ rows }) {
         <svg
           className="lb-chart-svg"
           viewBox={`0 0 ${width} ${height}`}
-          style={{ width: `${width}px`, height: 'auto' }}
+          style={{ width: `max(100%, ${width}px)`, height: 'auto' }}
           role="img"
           aria-label="Leaderboard chart with Elo score and standard deviation error bars"
         >
@@ -235,8 +240,8 @@ function LeaderboardChart({ rows }) {
           {linePath && <path d={linePath} className="lb-line-path" />}
 
           {points.map((point) => {
-            const labelLeft = point.idx >= points.length - 3;
-            const yOffset = point.idx % 2 === 0 ? -8 : 14;
+            const labelLeft = point.idx >= points.length - 1;
+            const yOffset = labelOffsets[point.idx % labelOffsets.length];
             return (
               <g key={point.policy}>
                 <line
@@ -269,7 +274,7 @@ function LeaderboardChart({ rows }) {
                 />
                 <text
                   className="lb-point-label"
-                  x={labelLeft ? point.x - 8 : point.x + 8}
+                  x={labelLeft ? point.x - 10 : point.x + 10}
                   y={point.y + yOffset}
                   textAnchor={labelLeft ? 'end' : 'start'}
                 >
