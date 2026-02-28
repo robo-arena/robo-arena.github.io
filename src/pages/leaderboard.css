@@ -61,6 +61,29 @@
 .lb-table td.right   { text-align: right;  padding-right: 10px; }
 .lb-table td.center  { text-align: center; }
 
+.lb-policy-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.lb-policy-name {
+  line-height: 1.1;
+}
+
+.lb-arxiv-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lb-arxiv-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
 .lb-table td.oss-cell {
   text-align: right;      /* push toward header edge  */
   padding-right: 50px;    /* tweak until it looks good */

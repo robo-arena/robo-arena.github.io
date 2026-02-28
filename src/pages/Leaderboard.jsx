@@ -3,6 +3,14 @@ import '../css/theme.css';
 import './leaderboard.css';          // 💡 add a page-specific stylesheet
 import PolicyAnalysisReport from '../components/PolicyAnalysisReport.jsx';
 import { apiGetJson } from '../api';
+import arxivLogo from '../assets/arxiv-logo.png';
+
+const POLICY_ARXIV_LINKS = {
+  DreamZero: 'https://arxiv.org/abs/2602.15922',
+  pi05_droid: 'https://arxiv.org/abs/2504.16054',
+  pi0_fast_droid: 'https://arxiv.org/abs/2501.09747',
+  pi0_droid: 'https://arxiv.org/abs/2410.24164',
+};
 
 export default function Leaderboard() {
   const [board, setBoard] = useState([]);
@@ -93,7 +101,23 @@ export default function Leaderboard() {
                 {visible.map((r, idx) => (          /* ← use filtered list */
                   <tr key={r.policy}>
                     <td className="left">{idx + 1}</td>
-                    <td>{r.policy}</td>
+                    <td>
+                      <div className="lb-policy-cell">
+                        <span className="lb-policy-name">{r.policy}</span>
+                        {POLICY_ARXIV_LINKS[r.policy] && (
+                          <a
+                            className="lb-arxiv-link"
+                            href={POLICY_ARXIV_LINKS[r.policy]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={`Open ${r.policy} paper on arXiv`}
+                            aria-label={`Open ${r.policy} paper on arXiv`}
+                          >
+                            <img src={arxivLogo} alt="arXiv paper" className="lb-arxiv-icon" />
+                          </a>
+                        )}
+                      </div>
+                    </td>
                     <td className="right">{r.score}</td>
                     <td className="right">{r.std}</td>
                     <td className="right">
