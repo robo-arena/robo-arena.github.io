@@ -1,7 +1,9 @@
 const API_BASE = import.meta.env.VITE_API_BASE ?? '/api';
 
-const DREAMING_ZEBRA = 'dreaming_zebra';
-const DREAM_ZERO = 'DreamZero';
+const POLICY_UI_ALIASES = {
+  dreaming_zebra: 'DreamZero',
+  'cosmos3-nano-policy': 'balsomsoc',
+};
 
 /**
  * Convenience wrapper for GET requests.
@@ -13,7 +15,8 @@ export function apiGet(path, init = {}) {
 
 export function renamePolicyForUi(name) {
   if (typeof name !== 'string') return name;
-  return name.trim().toLowerCase() === DREAMING_ZEBRA ? DREAM_ZERO : name;
+  const normalized = name.trim().toLowerCase();
+  return POLICY_UI_ALIASES[normalized] ?? name;
 }
 
 function normalizeLeaderboardPayload(payload) {
