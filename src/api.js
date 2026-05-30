@@ -4,6 +4,7 @@ const POLICY_UI_ALIASES = {
   dreaming_zebra: 'DreamZero',
   'cosmos3-nano-policy': 'balsomsoc',
   'j2-vla': 'Spirit v1.6',
+  yckmtchl: 'Cosmos3-Nano-Policy',
 };
 
 /**
