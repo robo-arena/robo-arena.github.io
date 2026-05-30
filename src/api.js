@@ -3,6 +3,7 @@ const API_BASE = import.meta.env.VITE_API_BASE ?? '/api';
 const POLICY_UI_ALIASES = {
   dreaming_zebra: 'DreamZero',
   'cosmos3-nano-policy': 'balsomsoc',
+  'j2-vla': 'Spirit v1.6',
 };
 
 /**
