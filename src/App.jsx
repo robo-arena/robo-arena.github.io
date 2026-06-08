@@ -23,10 +23,6 @@ function MaintenancePage() {
         />
         <p className="maintenance-kicker">RoboArena</p>
         <h1 id="maintenance-title">Under Maintenance</h1>
-        <p className="maintenance-copy">
-          We are updating RoboArena to improve benchmark integrity and transparency.
-          The site will be back online soon.
-        </p>
         <div className="maintenance-status" aria-hidden="true">
           <span />
           <span />
