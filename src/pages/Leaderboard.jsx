@@ -4,6 +4,7 @@ import './leaderboard.css';          // 💡 add a page-specific stylesheet
 import PolicyAnalysisReport from '../components/PolicyAnalysisReport.jsx';
 import { apiGetJson } from '../api';
 import arxivLogo from '../assets/arxiv-logo.png';
+import { HiOutlineClock } from 'react-icons/hi';
 
 const POLICY_ARXIV_LINKS = {
   DreamZero: 'https://arxiv.org/abs/2602.15922',
@@ -103,6 +104,7 @@ export default function Leaderboard() {
                     <td className="left">{idx + 1}</td>
                     <td>
                       <div className="lb-policy-cell">
+                        <PolicyStatusIndicators row={r} />
                         <span className="lb-policy-name">{r.policy}</span>
                         {POLICY_ARXIV_LINKS[r.policy] && (
                           <a
@@ -135,6 +137,64 @@ export default function Leaderboard() {
 
       <PolicyAnalysisReport />
     </div>
+  );
+}
+
+function formatUptimePercent(value) {
+  if (typeof value !== 'number' || Number.isNaN(value)) return null;
+  const rounded = Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1);
+  return `${rounded}%`;
+}
+
+function formatUptimeWindow(hours) {
+  if (typeof hours !== 'number' || Number.isNaN(hours)) return 'the tracked window';
+  if (hours < 48) return `the last ${hours} hours`;
+  const days = hours / 24;
+  const rounded = Number.isInteger(days) ? days.toFixed(0) : days.toFixed(1);
+  return `the last ${rounded} days`;
+}
+
+function PolicyStatusIndicators({ row }) {
+  const status = row.status || {};
+  const state =
+    status.is_active === true
+      ? 'active'
+      : status.is_active === false
+        ? 'inactive'
+        : 'unknown';
+
+  const statusTooltip =
+    state === 'active'
+      ? 'Active now. Latest health check succeeded.'
+      : state === 'inactive'
+        ? 'Inactive now. Latest health check failed.'
+        : 'Tracking starts after the next health check.';
+
+  const uptimePercent = formatUptimePercent(status.uptime_percent);
+  const sampleCount = Number(status.uptime_sample_count) || 0;
+  const uptimeTooltip = uptimePercent
+    ? `Recent uptime: ${uptimePercent} over ${formatUptimeWindow(status.uptime_window_hours)} (${sampleCount.toLocaleString()} checks).`
+    : 'Recent uptime appears after the next health check.';
+
+  return (
+    <span className="lb-status-group" aria-label={`Policy status for ${row.policy}`}>
+      <span
+        className={`lb-active-dot lb-active-dot-${state}`}
+        data-tooltip={statusTooltip}
+        role="img"
+        tabIndex={0}
+        aria-label={statusTooltip}
+      />
+      <span
+        className="lb-uptime-trigger"
+        data-tooltip={uptimeTooltip}
+        role="img"
+        tabIndex={0}
+        aria-label={uptimeTooltip}
+      >
+        <HiOutlineClock aria-hidden="true" />
+      </span>
+    </span>
   );
 }
 
