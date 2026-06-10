@@ -47,7 +47,7 @@ function OutcomeBar({ stats }) {
   );
 }
 
-function LabList({ items, emptyText }) {
+function LabOutcomeList({ items, emptyText }) {
   if (!items || items.length === 0) {
     return <p className="transparency-empty">{emptyText}</p>;
   }
@@ -72,6 +72,31 @@ function LabList({ items, emptyText }) {
   );
 }
 
+function LabCoverageList({ items, emptyText }) {
+  if (!items || items.length === 0) {
+    return <p className="transparency-empty">{emptyText}</p>;
+  }
+
+  return (
+    <div className="transparency-bar-list">
+      {items.map((item) => (
+        <div className="transparency-bar-row" key={item.label}>
+          <div className="transparency-bar-label">
+            <span>{item.label}</span>
+            <strong>{item.count}</strong>
+          </div>
+          <div className="transparency-bar-track">
+            <span style={{ width: `${Math.max(3, item.percent)}%` }} />
+          </div>
+          <small className="transparency-row-meta">
+            {formatPercent(item.percent)} of this policy&apos;s evals
+          </small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function OpponentList({ opponents }) {
   const topOpponents = (opponents || []).slice(0, 4);
   if (topOpponents.length === 0) {
@@ -84,11 +109,11 @@ function OpponentList({ opponents }) {
         <div className="transparency-opponent-row" key={opponent.policy}>
           <div>
             <span title={opponent.policy}>{opponent.policy}</span>
-            <small>{opponent.count} eval{opponent.count === 1 ? '' : 's'}</small>
+            <small>
+              {opponent.count} eval{opponent.count === 1 ? '' : 's'}, {opponent.wins}-{opponent.ties}-{opponent.losses}
+            </small>
           </div>
-          <strong>
-            {opponent.wins}-{opponent.ties}-{opponent.losses}
-          </strong>
+          <strong>{formatPercent(opponent.winRate)}</strong>
         </div>
       ))}
     </div>
@@ -146,6 +171,10 @@ export default function PolicyInsightPanel({ policyStats, row }) {
             <span>non-tie win rate</span>
           </div>
           <OutcomeBar stats={policyStats} />
+          <p className="policy-insight-note policy-insight-subnote">
+            By evaluator org
+          </p>
+          <LabOutcomeList items={policyStats.labs.slice(0, 3)} emptyText="No evaluator outcomes yet." />
         </section>
 
         <section className="policy-insight-card">
@@ -159,12 +188,12 @@ export default function PolicyInsightPanel({ policyStats, row }) {
               Top org share: {formatPercent(policyStats.topLabShare)}
             </p>
           )}
-          <LabList items={policyStats.labs.slice(0, 4)} emptyText="No evaluator organizations yet." />
+          <LabCoverageList items={policyStats.labs.slice(0, 4)} emptyText="No evaluator organizations yet." />
         </section>
 
         <section className="policy-insight-card">
           <h3>Common Opponents</h3>
-          <p className="policy-insight-note">Record is shown as wins-ties-losses.</p>
+          <p className="policy-insight-note">Percentages exclude ties; records are wins-ties-losses.</p>
           <OpponentList opponents={policyStats.opponents} />
         </section>
 
