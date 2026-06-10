@@ -149,42 +149,22 @@ function formatUptimePercent(value) {
   return `${rounded}%`;
 }
 
-function formatUptimeWindow(hours) {
-  if (typeof hours !== 'number' || Number.isNaN(hours)) return 'the tracked window';
-  if (hours < 48) return `the last ${hours} hours`;
-  const days = hours / 24;
-  const rounded = Number.isInteger(days) ? days.toFixed(0) : days.toFixed(1);
-  return `the last ${rounded} days`;
-}
-
-function formatUptimeMaxWindow(hours) {
-  if (typeof hours !== 'number' || Number.isNaN(hours)) return 'tracked window';
-  if (hours < 48) return `${hours}-hour`;
-  const days = hours / 24;
-  const rounded = Number.isInteger(days) ? days.toFixed(0) : days.toFixed(1);
-  return `${rounded}-day`;
-}
-
-function formatUptimeCoverage(status) {
-  const maxWindow = formatUptimeWindow(status.uptime_window_hours);
-  const maxWindowDuration = formatUptimeMaxWindow(status.uptime_window_hours);
+function formatUptimeCoverageDays(status) {
   const startMs = Date.parse(status.uptime_window_started_at);
   const endMs = Date.parse(status.last_status_checked_at);
   const maxHours = status.uptime_window_hours;
+  const maxDays =
+    typeof maxHours === 'number' && !Number.isNaN(maxHours)
+      ? Math.max(1, Math.ceil(maxHours / 24))
+      : 30;
+  let days = maxDays;
 
-  if (
-    Number.isFinite(startMs) &&
-    Number.isFinite(endMs) &&
-    typeof maxHours === 'number' &&
-    !Number.isNaN(maxHours)
-  ) {
-    const observedHours = Math.max(0, (endMs - startMs) / (1000 * 60 * 60));
-    if (observedHours + 0.25 >= maxHours) {
-      return `over ${maxWindow}`;
-    }
+  if (Number.isFinite(startMs) && Number.isFinite(endMs)) {
+    const observedDays = Math.ceil(Math.max(0, endMs - startMs) / (1000 * 60 * 60 * 24));
+    days = Math.min(maxDays, Math.max(1, observedDays));
   }
 
-  return `since tracking began (${maxWindowDuration} maximum)`;
+  return `${days} ${days === 1 ? 'day' : 'days'}`;
 }
 
 function PolicyStatusIndicators({ row }) {
@@ -204,10 +184,8 @@ function PolicyStatusIndicators({ row }) {
         : 'Policy server status appears after the next health check.';
 
   const uptimePercent = formatUptimePercent(status.uptime_percent);
-  const sampleCount = Number(status.uptime_sample_count) || 0;
-  const sampleLabel = sampleCount === 1 ? 'check' : 'checks';
   const uptimeTooltip = uptimePercent
-    ? `Policy server uptime: ${uptimePercent} ${formatUptimeCoverage(status)}; ${sampleCount.toLocaleString()} ${sampleLabel}.`
+    ? `Uptime fraction: ${uptimePercent} over the past ${formatUptimeCoverageDays(status)}.`
     : 'Policy server uptime appears after the next health check.';
 
   return (
