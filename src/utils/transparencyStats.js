@@ -84,6 +84,35 @@ function sortedCounterItems(counter, total, limit = 6) {
     }));
 }
 
+function createOutcomeCounter(label) {
+  return {
+    label,
+    count: 0,
+    wins: 0,
+    losses: 0,
+    ties: 0,
+  };
+}
+
+function updateOutcomeCounter(counter, outcome) {
+  counter.count += 1;
+  if (outcome === 'win') counter.wins += 1;
+  else if (outcome === 'loss') counter.losses += 1;
+  else if (outcome === 'tie') counter.ties += 1;
+}
+
+function sortedOutcomeCounterItems(counter, total, limit = 6) {
+  return [...counter.values()]
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
+    .slice(0, limit)
+    .map((item) => ({
+      ...item,
+      percent: roundPercent(percent(item.count, total)),
+      winRate: nonTieRate(item.wins, item.losses),
+      tieRate: roundPercent(percent(item.ties, item.count)),
+    }));
+}
+
 function createPolicyStats(policy) {
   return {
     policy,
@@ -162,7 +191,7 @@ function outcomeForPolicy(policy, evaluation) {
 }
 
 function finalizePolicyStats(stats) {
-  const topLabCount = Math.max(0, ...stats.labs.values());
+  const topLabCount = Math.max(0, ...[...stats.labs.values()].map((lab) => lab.count));
   const opponents = [...stats.opponents.values()]
     .sort((a, b) => b.count - a.count || a.policy.localeCompare(b.policy))
     .map((opponent) => ({
@@ -183,7 +212,7 @@ function finalizePolicyStats(stats) {
     evaluatorCount: stats.evaluators.size,
     opponentCount: stats.opponents.size,
     topLabShare: roundPercent(percent(topLabCount, stats.evals)),
-    labs: sortedCounterItems(stats.labs, stats.evals, 8),
+    labs: sortedOutcomeCounterItems(stats.labs, stats.evals, 8),
     evaluators: sortedCounterItems(stats.evaluators, stats.evals, 8),
     opponents,
     recentActivity: recentMonthBuckets(stats.months, stats.lastTimeMs),
@@ -298,7 +327,8 @@ export function buildTransparencyStats(evaluations = []) {
       const outcome = outcomeForPolicy(policy, evaluation);
 
       stats.evals += 1;
-      stats.labs.set(lab, (stats.labs.get(lab) || 0) + 1);
+      if (!stats.labs.has(lab)) stats.labs.set(lab, createOutcomeCounter(lab));
+      updateOutcomeCounter(stats.labs.get(lab), outcome);
       stats.evaluators.set(evaluator, (stats.evaluators.get(evaluator) || 0) + 1);
       if (month) increment(stats.months, month);
       updateDateRange(stats, timeMs);

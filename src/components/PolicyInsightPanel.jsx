@@ -47,7 +47,7 @@ function OutcomeBar({ stats }) {
   );
 }
 
-function BarList({ items, emptyText }) {
+function LabList({ items, emptyText }) {
   if (!items || items.length === 0) {
     return <p className="transparency-empty">{emptyText}</p>;
   }
@@ -58,11 +58,14 @@ function BarList({ items, emptyText }) {
         <div className="transparency-bar-row" key={item.label}>
           <div className="transparency-bar-label">
             <span>{item.label}</span>
-            <strong>{item.count}</strong>
+            <strong>{formatPercent(item.winRate)}</strong>
           </div>
           <div className="transparency-bar-track">
             <span style={{ width: `${Math.max(3, item.percent)}%` }} />
           </div>
+          <small className="transparency-row-meta">
+            {item.count} eval{item.count === 1 ? '' : 's'}, {item.wins}-{item.ties}-{item.losses}
+          </small>
         </div>
       ))}
     </div>
@@ -80,7 +83,7 @@ function OpponentList({ opponents }) {
       {topOpponents.map((opponent) => (
         <div className="transparency-opponent-row" key={opponent.policy}>
           <div>
-            <span>{opponent.policy}</span>
+            <span title={opponent.policy}>{opponent.policy}</span>
             <small>{opponent.count} eval{opponent.count === 1 ? '' : 's'}</small>
           </div>
           <strong>
@@ -128,7 +131,6 @@ export default function PolicyInsightPanel({ policyStats, row }) {
       <div className="policy-insight-header">
         <div>
           <strong>{policyStats.policy}</strong>
-          <span>Counted evidence behind this leaderboard row</span>
         </div>
         <div className="policy-insight-score">
           <span>Score {row?.score ?? 'n/a'}</span>
@@ -148,22 +150,16 @@ export default function PolicyInsightPanel({ policyStats, row }) {
 
         <section className="policy-insight-card">
           <h3>Evaluator Coverage</h3>
-          <div className="policy-insight-metrics">
-            <span>
-              <strong>{policyStats.labCount}</strong>
-              org{policyStats.labCount === 1 ? '' : 's'}
-            </span>
-            <span>
-              <strong>{policyStats.evaluatorCount}</strong>
-              account{policyStats.evaluatorCount === 1 ? '' : 's'}
-            </span>
+          <div className="policy-insight-single-metric">
+            <strong>{policyStats.labCount}</strong>
+            <span>evaluator org{policyStats.labCount === 1 ? '' : 's'}</span>
           </div>
           {topLab && (
             <p className="policy-insight-note">
               Top org share: {formatPercent(policyStats.topLabShare)}
             </p>
           )}
-          <BarList items={policyStats.labs.slice(0, 4)} emptyText="No evaluator organizations yet." />
+          <LabList items={policyStats.labs.slice(0, 4)} emptyText="No evaluator organizations yet." />
         </section>
 
         <section className="policy-insight-card">
