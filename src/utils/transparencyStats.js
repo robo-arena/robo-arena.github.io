@@ -143,8 +143,11 @@ function createContributorStats(label) {
   return {
     label,
     count: 0,
-    policies: new Set(),
-    pairs: new Set(),
+    policies: new Map(),
+    pairs: new Map(),
+    evaluators: new Set(),
+    months: new Map(),
+    recentEvaluations: [],
     ties: 0,
     firstTimeMs: Infinity,
     lastTimeMs: -Infinity,
@@ -163,6 +166,15 @@ function createPairStats(policy1, policy2) {
     evaluators: new Set(),
     firstTimeMs: Infinity,
     lastTimeMs: -Infinity,
+  };
+}
+
+function createContributorPairStats(policy1, policy2) {
+  return {
+    policy1,
+    policy2,
+    count: 0,
+    ties: 0,
   };
 }
 
@@ -228,12 +240,34 @@ function nonTieRate(wins, losses) {
 }
 
 function finalizeContributorStats(stats) {
+  const policies = [...stats.policies.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([policy, count]) => ({
+      policy,
+      count,
+      percent: roundPercent(percent(count, stats.count)),
+    }));
+  const pairs = [...stats.pairs.values()]
+    .sort((a, b) => b.count - a.count || a.policy1.localeCompare(b.policy1))
+    .map((pair) => ({
+      ...pair,
+      tieRate: roundPercent(percent(pair.ties, pair.count)),
+    }));
+  const recentEvaluations = [...stats.recentEvaluations]
+    .sort((a, b) => Date.parse(b.completionTime) - Date.parse(a.completionTime))
+    .slice(0, 6);
+
   return {
     label: stats.label,
     count: stats.count,
     policyCount: stats.policies.size,
     pairCount: stats.pairs.size,
+    evaluatorCount: stats.evaluators.size,
     tieRate: roundPercent(percent(stats.ties, stats.count)),
+    policies,
+    pairs,
+    recentActivity: recentMonthBuckets(stats.months, stats.lastTimeMs),
+    recentEvaluations,
     firstEvalAt: isoOrNull(stats.firstTimeMs),
     lastEvalAt: isoOrNull(stats.lastTimeMs),
   };
@@ -283,6 +317,15 @@ export function buildTransparencyStats(evaluations = []) {
     const sortedPolicies = [policyA, policyB].sort((a, b) => a.localeCompare(b));
     const pairKey = `${sortedPolicies[0]}|||${sortedPolicies[1]}`;
     const winner = preferenceWinner(evaluation);
+    const recentEval = {
+      sessionId: evaluation.session_id,
+      completionTime: evaluation.completion_time,
+      evaluator,
+      preference,
+      policyA,
+      policyB,
+      languageInstruction: evaluation.language_instruction,
+    };
 
     totalEvals += 1;
     if (preference === 'TIE') tieCount += 1;
@@ -311,9 +354,17 @@ export function buildTransparencyStats(evaluations = []) {
       if (!collection.has(label)) collection.set(label, createContributorStats(label));
       const stats = collection.get(label);
       stats.count += 1;
-      stats.policies.add(policyA);
-      stats.policies.add(policyB);
-      stats.pairs.add(pairKey);
+      increment(stats.policies, policyA);
+      increment(stats.policies, policyB);
+      stats.evaluators.add(evaluator);
+      if (!stats.pairs.has(pairKey)) {
+        stats.pairs.set(pairKey, createContributorPairStats(sortedPolicies[0], sortedPolicies[1]));
+      }
+      const contributorPairStats = stats.pairs.get(pairKey);
+      contributorPairStats.count += 1;
+      if (preference === 'TIE') contributorPairStats.ties += 1;
+      if (month) increment(stats.months, month);
+      stats.recentEvaluations.push(recentEval);
       if (preference === 'TIE') stats.ties += 1;
       updateDateRange(stats, timeMs);
     }
