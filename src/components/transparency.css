@@ -331,6 +331,10 @@
   background: linear-gradient(90deg, #f59749, #36a89e);
 }
 
+.transparency-bar-track-empty span {
+  background: transparent;
+}
+
 .transparency-opponent-list,
 .transparency-pair-list,
 .transparency-dashboard-list {

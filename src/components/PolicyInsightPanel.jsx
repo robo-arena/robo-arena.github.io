@@ -54,20 +54,26 @@ function LabOutcomeList({ items, emptyText }) {
 
   return (
     <div className="transparency-bar-list">
-      {items.map((item) => (
-        <div className="transparency-bar-row" key={item.label}>
-          <div className="transparency-bar-label">
-            <span>{item.label}</span>
-            <strong>{formatPercent(item.winRate)}</strong>
+      {items.map((item) => {
+        const hasWinRate = typeof item.winRate === 'number' && !Number.isNaN(item.winRate);
+        return (
+          <div className="transparency-bar-row" key={item.label}>
+            <div className="transparency-bar-label">
+              <span>{item.label}</span>
+              <strong>{formatPercent(item.winRate)}</strong>
+            </div>
+            <div
+              className={`transparency-bar-track ${hasWinRate ? '' : 'transparency-bar-track-empty'}`}
+              title={hasWinRate ? `${formatPercent(item.winRate)} non-tie win rate` : 'No non-tie outcomes'}
+            >
+              <span style={{ width: `${hasWinRate ? Math.max(3, item.winRate) : 0}%` }} />
+            </div>
+            <small className="transparency-row-meta">
+              {item.count} eval{item.count === 1 ? '' : 's'}, {item.wins}-{item.ties}-{item.losses}
+            </small>
           </div>
-          <div className="transparency-bar-track">
-            <span style={{ width: `${Math.max(3, item.percent)}%` }} />
-          </div>
-          <small className="transparency-row-meta">
-            {item.count} eval{item.count === 1 ? '' : 's'}, {item.wins}-{item.ties}-{item.losses}
-          </small>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
