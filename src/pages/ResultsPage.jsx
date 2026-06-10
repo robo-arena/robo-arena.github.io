@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useRef } from 'react'
 import EvaluationCard from '../components/EvaluationCard.jsx'
 import TransparencyDashboard from '../components/TransparencyDashboard.jsx'
 import '../css/theme.css'
+import './results.css'
 import { apiGetJson } from '../api';
 import { buildTransparencyStats, isRankingIncludedEvaluation } from '../utils/transparencyStats';
 
@@ -155,7 +156,7 @@ export default function ResultsPage() {
   /* render                                                              */
   /* ------------------------------------------------------------------ */
   return (
-    <div style={{ maxWidth: 1000, margin: '2rem auto', padding: '0 1rem' }}>
+    <div className="results-page-wrap">
       <h2 style={{ marginBottom: '1rem', textAlign: 'center'}}>A/B Evaluation Viewer</h2>
 
       <TransparencyDashboard
@@ -164,6 +165,13 @@ export default function ResultsPage() {
         filteredCount={filteredTransparencyCount}
         query={query}
       />
+
+      <div className="results-browser-divider" aria-label="A/B evaluation browser">
+        <span>A/B Evaluation Browser</span>
+        <strong>
+          {filtered.length.toLocaleString()} record{filtered.length === 1 ? '' : 's'} shown
+        </strong>
+      </div>
 
       {/* search bar + reset / refresh */}
       <div
