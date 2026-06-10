@@ -49,7 +49,7 @@ function PairList({ pairs }) {
       {pairs.map((pair) => (
         <div className="transparency-pair-row" key={`${pair.policy1}-${pair.policy2}`}>
           <div>
-            <span>
+            <span title={`${pair.policy1} vs ${pair.policy2}`}>
               {pair.policy1} vs {pair.policy2}
             </span>
             <small>
