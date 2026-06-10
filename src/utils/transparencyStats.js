@@ -289,6 +289,111 @@ function finalizePairStats(stats) {
   };
 }
 
+function buildIntegritySignals({
+  totalEvals,
+  globalTieRate,
+  policies,
+  evaluatorOrganizations,
+  pairs,
+}) {
+  const officialPolicies = policies.filter((policy) => policy.evals >= 100);
+  const coveragePolicies = officialPolicies.length
+    ? officialPolicies
+    : policies.filter((policy) => policy.evals >= 20);
+  const topOrg = evaluatorOrganizations[0] || null;
+  const topPair = pairs[0] || null;
+  const minimumOrgOutlierEvals = Math.max(20, Math.ceil(totalEvals * 0.01));
+
+  const highestPolicyOrgShare = coveragePolicies
+    .filter((policy) => policy.labs.length > 0)
+    .map((policy) => ({
+      policy: policy.policy,
+      evals: policy.evals,
+      evaluatorOrg: policy.labs[0].label,
+      evaluatorOrgEvals: policy.labs[0].count,
+      percent: policy.topLabShare,
+      labCount: policy.labCount,
+    }))
+    .sort((a, b) => b.percent - a.percent || b.evals - a.evals)[0] || null;
+
+  const largestTopOrgWinRateSwing = coveragePolicies
+    .map((policy) => {
+      const topLab = policy.labs[0];
+      if (!topLab) return null;
+
+      const totalNonTie = policy.wins + policy.losses;
+      const remainingWins = policy.wins - topLab.wins;
+      const remainingLosses = policy.losses - topLab.losses;
+      const remainingNonTie = remainingWins + remainingLosses;
+      if (totalNonTie < 20 || remainingNonTie < 10) return null;
+
+      const overallWinRate = nonTieRate(policy.wins, policy.losses);
+      const withoutTopOrgWinRate = nonTieRate(remainingWins, remainingLosses);
+      if (overallWinRate === null || withoutTopOrgWinRate === null) return null;
+
+      return {
+        policy: policy.policy,
+        evaluatorOrg: topLab.label,
+        topOrgEvals: topLab.count,
+        evals: policy.evals,
+        overallWinRate,
+        withoutTopOrgWinRate,
+        swingPercent: roundPercent(Math.abs(withoutTopOrgWinRate - overallWinRate)),
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.swingPercent - a.swingPercent || b.evals - a.evals)[0] || null;
+
+  const tieRateOutlier = evaluatorOrganizations
+    .filter((org) => org.count >= minimumOrgOutlierEvals)
+    .map((org) => ({
+      evaluatorOrg: org.label,
+      evals: org.count,
+      tieRate: org.tieRate,
+      globalTieRate,
+      deviationPercent: roundPercent(Math.abs(org.tieRate - globalTieRate)),
+    }))
+    .sort((a, b) => b.deviationPercent - a.deviationPercent || b.evals - a.evals)[0] || null;
+
+  const thinOfficialCoveragePolicies = officialPolicies
+    .filter((policy) => policy.labCount < 3)
+    .sort((a, b) => a.labCount - b.labCount || b.evals - a.evals)
+    .map((policy) => ({
+      policy: policy.policy,
+      evals: policy.evals,
+      evaluatorOrgs: policy.labCount,
+      topOrgShare: policy.topLabShare,
+    }));
+
+  return {
+    minimumOrgOutlierEvals,
+    officialPolicyEvalThreshold: 100,
+    largestOrgShare: topOrg
+      ? {
+          evaluatorOrg: topOrg.label,
+          evals: topOrg.count,
+          percent: roundPercent(percent(topOrg.count, totalEvals)),
+        }
+      : null,
+    highestPolicyOrgShare,
+    largestTopOrgWinRateSwing,
+    tieRateOutlier,
+    thinOfficialCoverage: {
+      count: thinOfficialCoveragePolicies.length,
+      policies: thinOfficialCoveragePolicies.slice(0, 8),
+    },
+    pairConcentration: topPair
+      ? {
+          policy1: topPair.policy1,
+          policy2: topPair.policy2,
+          evals: topPair.count,
+          percent: roundPercent(percent(topPair.count, totalEvals)),
+          evaluatorOrgs: topPair.labCount,
+        }
+      : null,
+  };
+}
+
 export function buildTransparencyStats(evaluations = []) {
   const policies = new Map();
   const evaluatorOrganizations = new Map();
@@ -407,6 +512,15 @@ export function buildTransparencyStats(evaluations = []) {
     .map(finalizePolicyStats)
     .sort((a, b) => b.evals - a.evals || a.policy.localeCompare(b.policy));
   const policyByName = Object.fromEntries(policyList.map((policy) => [policy.policy, policy]));
+  const evaluatorOrganizationList = [...evaluatorOrganizations.values()]
+    .map(finalizeContributorStats)
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  const evaluatorAccountList = [...evaluatorAccounts.values()]
+    .map(finalizeContributorStats)
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  const pairList = [...pairs.values()]
+    .map(finalizePairStats)
+    .sort((a, b) => b.count - a.count || a.policy1.localeCompare(b.policy1));
 
   return {
     generatedAt: new Date().toISOString(),
@@ -420,17 +534,18 @@ export function buildTransparencyStats(evaluations = []) {
     firstEvalAt: isoOrNull(firstTimeMs),
     lastEvalAt: isoOrNull(lastTimeMs),
     recentActivity: recentMonthBuckets(globalMonths, lastTimeMs),
+    integritySignals: buildIntegritySignals({
+      totalEvals,
+      globalTieRate: roundPercent(percent(tieCount, totalEvals)),
+      policies: policyList,
+      evaluatorOrganizations: evaluatorOrganizationList,
+      pairs: pairList,
+    }),
     policies: policyList,
     policyByName,
-    evaluatorOrganizations: [...evaluatorOrganizations.values()]
-      .map(finalizeContributorStats)
-      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label)),
-    evaluatorAccounts: [...evaluatorAccounts.values()]
-      .map(finalizeContributorStats)
-      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label)),
-    pairs: [...pairs.values()]
-      .map(finalizePairStats)
-      .sort((a, b) => b.count - a.count || a.policy1.localeCompare(b.policy1)),
+    evaluatorOrganizations: evaluatorOrganizationList,
+    evaluatorAccounts: evaluatorAccountList,
+    pairs: pairList,
   };
 }
 

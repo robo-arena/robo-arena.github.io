@@ -19,12 +19,114 @@ function formatDate(value) {
   return DATE_FORMAT.format(new Date(value));
 }
 
+function formatPoints(value) {
+  if (value === null || value === undefined || Number.isNaN(value)) return 'n/a';
+  return `${value.toFixed(value % 1 === 0 ? 0 : 1)} pp`;
+}
+
+function toneFromValue(value, watchAt, reviewAt) {
+  if (value === null || value === undefined || Number.isNaN(value)) return 'neutral';
+  if (value >= reviewAt) return 'review';
+  if (value >= watchAt) return 'watch';
+  return 'neutral';
+}
+
 function DownloadButton({ children, onClick }) {
   return (
     <button type="button" className="transparency-download-btn" onClick={onClick}>
       <HiOutlineDownload aria-hidden="true" />
       {children}
     </button>
+  );
+}
+
+function IntegritySignalCard({ label, value, detail, tone = 'neutral', title }) {
+  return (
+    <article className={`integrity-signal-card ${tone}`} title={title || detail}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <small>{detail}</small>
+    </article>
+  );
+}
+
+function IntegritySignals({ signals }) {
+  if (!signals) return null;
+
+  const topOrg = signals.largestOrgShare;
+  const policyShare = signals.highestPolicyOrgShare;
+  const winRateSwing = signals.largestTopOrgWinRateSwing;
+  const tieOutlier = signals.tieRateOutlier;
+  const thinCoverage = signals.thinOfficialCoverage;
+  const pairConcentration = signals.pairConcentration;
+
+  const cards = [
+    topOrg && {
+      key: 'top-org',
+      label: 'Top Org Share',
+      value: formatPercent(topOrg.percent),
+      detail: `${topOrg.evaluatorOrg} · ${topOrg.evals.toLocaleString()} evals`,
+      tone: toneFromValue(topOrg.percent, 25, 40),
+      title: 'Largest share of counted A/B evaluations from one evaluator organization.',
+    },
+    policyShare && {
+      key: 'policy-share',
+      label: 'Policy Dependence',
+      value: formatPercent(policyShare.percent),
+      detail: `${policyShare.policy} from ${policyShare.evaluatorOrg}`,
+      tone: toneFromValue(policyShare.percent, 55, 70),
+      title: 'Largest share of one official policy\'s evidence from a single evaluator organization.',
+    },
+    winRateSwing && {
+      key: 'top-org-swing',
+      label: 'Top-Org Swing',
+      value: formatPoints(winRateSwing.swingPercent),
+      detail: `${winRateSwing.policy}: ${formatPercent(winRateSwing.overallWinRate)} to ${formatPercent(
+        winRateSwing.withoutTopOrgWinRate
+      )}`,
+      tone: toneFromValue(winRateSwing.swingPercent, 10, 20),
+      title: `Largest non-tie win-rate change after removing the top contributing org (${winRateSwing.evaluatorOrg}).`,
+    },
+    tieOutlier && {
+      key: 'tie-outlier',
+      label: 'Tie-Rate Outlier',
+      value: formatPoints(tieOutlier.deviationPercent),
+      detail: `${tieOutlier.evaluatorOrg}: ${formatPercent(tieOutlier.tieRate)} ties`,
+      tone: toneFromValue(tieOutlier.deviationPercent, 15, 25),
+      title: `Largest tie-rate deviation among orgs with at least ${signals.minimumOrgOutlierEvals} counted evals.`,
+    },
+    thinCoverage && {
+      key: 'thin-coverage',
+      label: 'Thin Coverage',
+      value: thinCoverage.count.toLocaleString(),
+      detail: `official policies with fewer than 3 evaluator orgs`,
+      tone: thinCoverage.count > 2 ? 'review' : thinCoverage.count > 0 ? 'watch' : 'neutral',
+      title: 'Official policies with 100+ A/B evals but fewer than 3 contributing evaluator organizations.',
+    },
+    pairConcentration && {
+      key: 'pair-concentration',
+      label: 'Top Pair Share',
+      value: formatPercent(pairConcentration.percent),
+      detail: `${pairConcentration.policy1} vs ${pairConcentration.policy2} · ${pairConcentration.evals.toLocaleString()} evals`,
+      tone: toneFromValue(pairConcentration.percent, 12, 20),
+      title: 'Largest share of counted A/B evaluations from a single policy pair.',
+    },
+  ].filter(Boolean);
+
+  if (!cards.length) return null;
+
+  return (
+    <div className="integrity-signal-strip">
+      <div className="integrity-signal-header">
+        <h4>Integrity Signals</h4>
+        <span>Public counted evals</span>
+      </div>
+      <div className="integrity-signal-row" tabIndex={0} aria-label="Integrity signals">
+        {cards.map(({ key, ...card }) => (
+          <IntegritySignalCard key={key} {...card} />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -205,6 +307,7 @@ export default function TransparencyDashboard({ evaluations, stats, filteredCoun
       last_eval_at: stats.lastEvalAt,
     },
     evaluator_organizations: stats.evaluatorOrganizations,
+    integrity_signals: stats.integritySignals,
     policies: stats.policies,
     pairs: stats.pairs,
   };
@@ -244,6 +347,8 @@ export default function TransparencyDashboard({ evaluations, stats, filteredCoun
           </DownloadButton>
         </div>
       </div>
+
+      <IntegritySignals signals={stats.integritySignals} />
 
       <div className="evaluator-org-layout">
         <div className="evaluator-org-list" aria-label="Evaluator organizations">

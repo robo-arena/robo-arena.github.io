@@ -558,6 +558,99 @@
   min-width: 0;
 }
 
+.integrity-signal-strip {
+  display: grid;
+  gap: 0.45rem;
+  border-top: 1px solid rgba(119, 144, 151, 0.14);
+  border-bottom: 1px solid rgba(119, 144, 151, 0.14);
+  margin: 0 0 0.75rem;
+  padding: 0.58rem 0 0.66rem;
+}
+
+.integrity-signal-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.integrity-signal-header h4 {
+  margin: 0;
+  color: #2c414c;
+  font-size: 0.82rem;
+  line-height: 1.15;
+}
+
+.integrity-signal-header span {
+  color: #75848a;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.integrity-signal-row {
+  display: flex;
+  gap: 0.48rem;
+  overflow-x: auto;
+  padding-bottom: 0.1rem;
+  scrollbar-color: rgba(245, 151, 73, 0.6) rgba(245, 151, 73, 0.12);
+}
+
+.integrity-signal-row:focus-visible {
+  outline: 2px solid rgba(245, 151, 73, 0.55);
+  outline-offset: 2px;
+}
+
+.integrity-signal-card {
+  box-sizing: border-box;
+  flex: 0 0 154px;
+  min-width: 0;
+  min-height: 5.15rem;
+  border: 1px solid rgba(119, 144, 151, 0.16);
+  border-left: 3px solid rgba(54, 168, 158, 0.55);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #314753;
+  padding: 0.42rem 0.46rem;
+}
+
+.integrity-signal-card.watch {
+  border-left-color: #e1b549;
+  background: rgba(255, 251, 237, 0.9);
+}
+
+.integrity-signal-card.review {
+  border-left-color: #c96b60;
+  background: rgba(255, 246, 243, 0.92);
+}
+
+.integrity-signal-card span {
+  display: block;
+  color: #64757d;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 0.22rem;
+}
+
+.integrity-signal-card strong {
+  display: block;
+  color: #233944;
+  font-size: 1.08rem;
+  line-height: 1;
+  margin-bottom: 0.28rem;
+}
+
+.integrity-signal-card small {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #667780;
+  font-size: 0.68rem;
+  line-height: 1.24;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .evaluator-org-panel {
   padding: 0.72rem 0.82rem 0.8rem;
   box-shadow: 0 3px 14px rgba(20, 39, 59, 0.08);
@@ -792,10 +885,20 @@
   .evaluator-org-list {
     max-height: 8.5rem;
   }
+
+  .integrity-signal-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.18rem;
+  }
 }
 
 @media (max-width: 520px) {
   .transparency-grid {
     grid-template-columns: 1fr;
+  }
+
+  .integrity-signal-card {
+    flex-basis: 138px;
   }
 }
