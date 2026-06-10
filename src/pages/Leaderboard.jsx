@@ -41,14 +41,10 @@ export default function Leaderboard() {
     () => [...visible].sort((a, b) => a.score - b.score),
     [visible]
   );
-  const scopeLabel =
-    leaderboardScope === 'all'
-      ? `${board.length} policies`
-      : `${mainRows.length} policies with ${MAIN_LEADERBOARD_MIN_EVALS}+ A/B evals`;
   const scopeNote =
     leaderboardScope === 'all'
-      ? `Showing ${visible.length.toLocaleString()} of ${scopeLabel}; exploratory view, low-eval rankings may be noisy.`
-      : `Official leaderboard showing ${visible.length.toLocaleString()} of ${scopeLabel}; rankings are lower variance at this eval count.`;
+      ? 'All policies · exploratory view with lower-sample results.'
+      : `Official leaderboard · ${MAIN_LEADERBOARD_MIN_EVALS}+ A/B evals for more stable rankings.`;
 
   return (
     <div className="leaderboard-wrap">
