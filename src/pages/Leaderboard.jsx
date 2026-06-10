@@ -45,6 +45,10 @@ export default function Leaderboard() {
     leaderboardScope === 'all'
       ? `${board.length} policies`
       : `${mainRows.length} policies with ${MAIN_LEADERBOARD_MIN_EVALS}+ A/B evals`;
+  const scopeNote =
+    leaderboardScope === 'all'
+      ? 'Exploratory view; low-eval rankings may be noisy.'
+      : 'Official leaderboard; rankings are lower variance at this eval count.';
 
   return (
     <div className="leaderboard-wrap">
@@ -70,7 +74,7 @@ export default function Leaderboard() {
             onClick={() => setLeaderboardScope('main')}
             aria-pressed={leaderboardScope === 'main'}
           >
-            <span>Main</span>
+            <span>Official</span>
             <strong>{MAIN_LEADERBOARD_MIN_EVALS}+ evals</strong>
           </button>
           <button
@@ -106,7 +110,8 @@ export default function Leaderboard() {
 
       {board.length > 0 && (
         <p className="lb-scope-summary">
-          Showing {visible.length.toLocaleString()} of {scopeLabel}.
+          <span>Showing {visible.length.toLocaleString()} of {scopeLabel}.</span>
+          <strong>{scopeNote}</strong>
         </p>
       )}
 
