@@ -145,26 +145,6 @@
   font-size: 0.95rem;
 }
 
-.lb-history-control {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  color: #4d5d67;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.lb-history-control select {
-  min-height: 2rem;
-  max-width: 12rem;
-  border: 1px solid rgba(20, 39, 59, 0.18);
-  border-radius: 6px;
-  background: #ffffff;
-  color: #26343d;
-  font: inherit;
-  padding: 0.28rem 0.45rem;
-}
-
 .lb-toggle {
   display: inline-flex;
   align-items: center;

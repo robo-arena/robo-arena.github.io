@@ -52,6 +52,7 @@ function IntegritySignalCard({ label, value, detail, explanation, tone = 'neutra
       <span>{label}</span>
       <strong>{value}</strong>
       <small>{detail}</small>
+      <p>{explanation}</p>
     </article>
   );
 }
@@ -68,51 +69,51 @@ function IntegritySignals({ signals }) {
   const cards = [
     rejection && {
       key: 'request-dropoff',
-      label: 'Request Drop-Off',
+      label: 'Assignment Drop-Off',
       value: formatPercent(rejection.rejection_rate),
       detail: `${rejection.label} · ${rejection.performed.toLocaleString()}/${rejection.requested.toLocaleString()} performed`,
       explanation:
-        'Requested evals are assigned A/B sessions. Performed evals submitted a terminal preference. High drop-off can indicate discarded or abandoned assignments.',
+        'Shows whether assigned A/B sessions usually turn into submitted preferences. High drop-off is worth reviewing because discarded assignments can bias which comparisons are completed.',
       tone: toneFromValue(rejection.rejection_rate, 50, 80),
       title: `Largest request-to-performed drop-off among evaluator orgs with at least ${signals.minimumRequestedForDropoffSignal} requested evals.`,
     },
     topOrg && {
       key: 'top-org',
-      label: 'Top Org Share',
+      label: 'Evaluator Concentration',
       value: formatPercent(topOrg.percent),
       detail: `${topOrg.evaluatorOrg} · ${topOrg.evals.toLocaleString()} evals`,
       explanation:
-        'Largest share of counted public A/B evaluations from one evaluator organization.',
+        'Shows how much of the counted benchmark evidence came from the single most active evaluator org.',
       tone: toneFromValue(topOrg.percent, 25, 40),
       title: 'Largest share of counted A/B evaluations from one evaluator organization.',
     },
     policyShare && {
       key: 'policy-share',
-      label: 'Policy Dependence',
+      label: 'Single-Org Dependence',
       value: formatPercent(policyShare.percent),
       detail: `${policyShare.policy} from ${policyShare.evaluatorOrg}`,
       explanation:
-        'For official policies, this is the largest share of a policy score coming from one evaluator org.',
+        'For official policies, this highlights the policy whose evidence depends most heavily on one evaluator org.',
       tone: toneFromValue(policyShare.percent, 55, 70),
       title: 'Largest share of one official policy\'s evidence from a single evaluator organization.',
     },
     thinCoverage && {
       key: 'thin-coverage',
-      label: 'Thin Coverage',
+      label: 'Limited Coverage',
       value: thinCoverage.count.toLocaleString(),
       detail: `official policies with fewer than 3 evaluator orgs`,
       explanation:
-        'Counts official policies with 100+ A/B evals but fewer than three evaluator organizations contributing evidence.',
+        'Counts official policies whose 100+ A/B evals come from fewer than three evaluator orgs.',
       tone: thinCoverage.count > 2 ? 'review' : thinCoverage.count > 0 ? 'watch' : 'neutral',
       title: 'Official policies with 100+ A/B evals but fewer than 3 contributing evaluator organizations.',
     },
     pairConcentration && {
       key: 'pair-concentration',
-      label: 'Top Pair Share',
+      label: 'Pair Concentration',
       value: formatPercent(pairConcentration.percent),
       detail: `${pairConcentration.policy1} vs ${pairConcentration.policy2} · ${pairConcentration.evals.toLocaleString()} evals`,
       explanation:
-        'Largest fraction of counted A/B evaluations spent on one policy pair. High concentration can make rankings easier to steer.',
+        'Shows whether many counted evals are concentrated on one policy matchup instead of being spread across comparisons.',
       tone: toneFromValue(pairConcentration.percent, 12, 20),
       title: 'Largest share of counted A/B evaluations from a single policy pair.',
     },
@@ -122,6 +123,15 @@ function IntegritySignals({ signals }) {
 
   return (
     <div className="integrity-signal-strip">
+      <div className="integrity-signal-header">
+        <div>
+          <h4>Review Signals</h4>
+          <span>
+            These are audit cues for transparency. They do not by themselves imply
+            misconduct; they point to places where concentration or drop-off is worth inspecting.
+          </span>
+        </div>
+      </div>
       <div className="integrity-signal-row" tabIndex={0} aria-label="Integrity signals">
         {cards.map(({ key, ...card }) => (
           <IntegritySignalCard key={key} {...card} />
@@ -532,43 +542,45 @@ export default function TransparencyDashboard({ stats, filteredCount, query, onD
         </div>
       </div>
 
-      <IntegritySignals signals={stats.integritySignals} />
-
       {isExpanded && (
-        <div className="evaluator-org-layout">
-          <div className="evaluator-org-list" aria-label="Evaluator organizations">
-            {orgs.map((org) => {
-              const isActive = org.label === activeOrg?.label;
-              const countLabel = org.requestStats?.requested ?? org.count;
-              return (
-                <button
-                  type="button"
-                  className={`evaluator-org-item ${isActive ? 'active' : ''}`}
-                  key={org.label}
-                  onClick={() => setActiveOrgLabel(org.label)}
-                  onFocus={() => setActiveOrgLabel(org.label)}
-                  onMouseEnter={() => setActiveOrgLabel(org.label)}
-                >
-                  <span title={org.label}>{org.label}</span>
-                  <strong>{countLabel.toLocaleString()}</strong>
-                </button>
-              );
-            })}
-          </div>
+        <>
+          <IntegritySignals signals={stats.integritySignals} />
 
-          {activeOrg && (
-            <EvaluatorOrgDetails
-              org={activeOrg}
-              rankImpact={activeImpact}
-              isRankImpactLoading={
-                activeOrg.count > 0 &&
-                !hasImpactResult &&
-                loadingImpactLabel === activeOrg.label &&
-                !activeImpactIsWarming
-              }
-            />
-          )}
-        </div>
+          <div className="evaluator-org-layout">
+            <div className="evaluator-org-list" aria-label="Evaluator organizations">
+              {orgs.map((org) => {
+                const isActive = org.label === activeOrg?.label;
+                const countLabel = org.requestStats?.requested ?? org.count;
+                return (
+                  <button
+                    type="button"
+                    className={`evaluator-org-item ${isActive ? 'active' : ''}`}
+                    key={org.label}
+                    onClick={() => setActiveOrgLabel(org.label)}
+                    onFocus={() => setActiveOrgLabel(org.label)}
+                    onMouseEnter={() => setActiveOrgLabel(org.label)}
+                  >
+                    <span title={org.label}>{org.label}</span>
+                    <strong>{countLabel.toLocaleString()}</strong>
+                  </button>
+                );
+              })}
+            </div>
+
+            {activeOrg && (
+              <EvaluatorOrgDetails
+                org={activeOrg}
+                rankImpact={activeImpact}
+                isRankImpactLoading={
+                  activeOrg.count > 0 &&
+                  !hasImpactResult &&
+                  loadingImpactLabel === activeOrg.label &&
+                  !activeImpactIsWarming
+                }
+              />
+            )}
+          </div>
+        </>
       )}
     </section>
   );

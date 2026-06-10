@@ -20,8 +20,6 @@ const MAIN_LEADERBOARD_MIN_EVALS = 100;
 export default function Leaderboard() {
   const [currentBoard, setCurrentBoard] = useState([]);
   const [currentUpdated, setCurrentUpdated] = useState(null);
-  const [snapshots, setSnapshots] = useState([]);
-  const [selectedSnapshotId, setSelectedSnapshotId] = useState('current');
   const [ossOnly, setOssOnly] = useState(false);
   const [showChart, setShowChart] = useState(false);
   const [leaderboardScope, setLeaderboardScope] = useState('main');
@@ -42,19 +40,8 @@ export default function Leaderboard() {
       .catch(console.error);
   }, []);
 
-  useEffect(() => {
-    apiGetJson('/leaderboard_history')
-      .then((d) => setSnapshots(d.snapshots || []))
-      .catch(console.error);
-  }, []);
-
-  const activeSnapshot = useMemo(
-    () => snapshots.find((snapshot) => String(snapshot.id) === selectedSnapshotId) || null,
-    [selectedSnapshotId, snapshots]
-  );
-  const board = activeSnapshot ? activeSnapshot.board : currentBoard;
-  const updated = activeSnapshot ? activeSnapshot.snapshot_at : currentUpdated;
-  const isHistorical = Boolean(activeSnapshot);
+  const board = currentBoard;
+  const updated = currentUpdated;
   const mainRows = useMemo(
     () => board.filter((row) => (Number(row.num_evals) || 0) >= MAIN_LEADERBOARD_MIN_EVALS),
     [board]
@@ -82,8 +69,7 @@ export default function Leaderboard() {
 
       {updated && (
         <p style={{ textAlign: 'center', fontSize: '0.95rem', color: '#555' }}>
-          {isHistorical ? 'Weekly snapshot' : 'Last updated'}&nbsp;
-          {new Date(updated).toLocaleString()}
+          Last updated&nbsp;{new Date(updated).toLocaleString()}
         </p>
       )}
 
@@ -117,20 +103,6 @@ export default function Leaderboard() {
         </div>
 
         <div className="lb-filter">
-          <label className="lb-history-control">
-            <span>Snapshot</span>
-            <select
-              value={selectedSnapshotId}
-              onChange={(e) => setSelectedSnapshotId(e.target.value)}
-            >
-              <option value="current">Current</option>
-              {snapshots.map((snapshot) => (
-                <option value={String(snapshot.id)} key={snapshot.id}>
-                  Week of {new Date(snapshot.week_start).toLocaleDateString()}
-                </option>
-              ))}
-            </select>
-          </label>
           <label className="lb-toggle">
             <input
               type="checkbox"
