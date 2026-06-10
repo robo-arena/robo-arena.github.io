@@ -50,9 +50,71 @@ function normalizeAbEvaluationsPayload(payload) {
   };
 }
 
+function normalizeLeaderboardImpactPayload(payload) {
+  const normalizeBoardRow = (row) => ({
+    ...row,
+    policy: renamePolicyForUi(row.policy),
+    numEvals: row.num_evals ?? row.numEvals,
+  });
+  const normalizeChange = (change) => ({
+    policy: renamePolicyForUi(change.policy),
+    baseRank: change.base_rank,
+    withoutRank: change.without_rank,
+    rankDelta: change.rank_delta,
+    baseScore: change.base_score,
+    withoutScore: change.without_score,
+    scoreDelta: change.score_delta,
+    baseEvals: change.base_evals,
+    withoutEvals: change.without_evals,
+  });
+  const normalizeOrgImpact = (impact) => ({
+    status: impact.status,
+    label: impact.label,
+    source: impact.source,
+    generatedAt: impact.generated_at ?? impact.generatedAt,
+    cacheStale: impact.cache_stale ?? impact.cacheStale,
+    baseline: (impact.baseline || []).map(normalizeBoardRow),
+    withoutOrg: (impact.without_org || impact.withoutOrg || []).map(normalizeBoardRow),
+    topChanges: (impact.top_changes || impact.topChanges || []).map(normalizeChange),
+    largestChange: impact.largest_change ? normalizeChange(impact.largest_change) : null,
+    maxAbsRankDelta: impact.max_abs_rank_delta ?? impact.maxAbsRankDelta,
+    maxAbsScoreDelta: impact.max_abs_score_delta ?? impact.maxAbsScoreDelta,
+  });
+
+  if (!payload) return payload;
+  if (!payload.by_org) {
+    return {
+      ...normalizeOrgImpact(payload),
+      officialPolicyEvalThreshold:
+        payload.official_policy_eval_threshold ?? payload.officialPolicyEvalThreshold,
+    };
+  }
+
+  return {
+    generatedAt: payload.generated_at,
+    source: payload.source,
+    officialPolicyEvalThreshold:
+      payload.official_policy_eval_threshold ?? payload.officialPolicyEvalThreshold,
+    baseline: (payload.baseline || []).map(normalizeBoardRow),
+    byOrg: Object.fromEntries(
+      Object.entries(payload.by_org).map(([label, impact]) => [
+        label,
+        normalizeOrgImpact(impact),
+      ])
+    ),
+    largestOrgImpact: payload.largest_org_impact
+      ? normalizeOrgImpact(payload.largest_org_impact)
+      : null,
+  };
+}
+
 function normalizeApiJson(path, payload) {
-  if (path === '/leaderboard') return normalizeLeaderboardPayload(payload);
-  if (path === '/list_ab_evaluations') return normalizeAbEvaluationsPayload(payload);
+  const pathname = path.split('?')[0];
+  if (pathname === '/leaderboard') return normalizeLeaderboardPayload(payload);
+  if (pathname === '/list_ab_evaluations') return normalizeAbEvaluationsPayload(payload);
+  if (pathname === '/evaluator_leaderboard_impact') {
+    return normalizeLeaderboardImpactPayload(payload);
+  }
   return payload;
 }
 

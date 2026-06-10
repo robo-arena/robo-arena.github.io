@@ -290,157 +290,6 @@ function finalizePairStats(stats) {
   };
 }
 
-function fitBtLeaderboard(rows) {
-  const policies = new Set();
-  const wins = new Map();
-  const evalCounts = new Map();
-  const pairCounts = new Map();
-
-  for (const row of rows) {
-    policies.add(row.policyA);
-    policies.add(row.policyB);
-    increment(evalCounts, row.policyA);
-    increment(evalCounts, row.policyB);
-
-    const [policy1, policy2] = [row.policyA, row.policyB].sort((a, b) => a.localeCompare(b));
-    const pairKey = `${policy1}|||${policy2}`;
-    if (!pairCounts.has(pairKey)) {
-      pairCounts.set(pairKey, { policy1, policy2, count: 0 });
-    }
-    pairCounts.get(pairKey).count += 1;
-
-    if (row.preference === 'A') {
-      increment(wins, row.policyA);
-    } else if (row.preference === 'B') {
-      increment(wins, row.policyB);
-    } else if (row.preference === 'TIE') {
-      increment(wins, row.policyA, 0.5);
-      increment(wins, row.policyB, 0.5);
-    }
-  }
-
-  const policyList = [...policies];
-  if (!policyList.length) return [];
-
-  const skill = new Map(policyList.map((policy) => [policy, 1]));
-
-  for (let iter = 0; iter < 160; iter += 1) {
-    const denominators = new Map(policyList.map((policy) => [policy, 0]));
-
-    for (const pair of pairCounts.values()) {
-      const skill1 = skill.get(pair.policy1) || 1;
-      const skill2 = skill.get(pair.policy2) || 1;
-      const contribution = pair.count / Math.max(1e-9, skill1 + skill2);
-      increment(denominators, pair.policy1, contribution);
-      increment(denominators, pair.policy2, contribution);
-    }
-
-    const nextSkill = new Map();
-    for (const policy of policyList) {
-      const numerator = (wins.get(policy) || 0) + 0.5;
-      const denominator = (denominators.get(policy) || 0) + 0.5;
-      nextSkill.set(policy, Math.max(1e-9, numerator / denominator));
-    }
-
-    const meanLog =
-      policyList.reduce((sum, policy) => sum + Math.log(nextSkill.get(policy)), 0) /
-      policyList.length;
-    let maxDelta = 0;
-    for (const policy of policyList) {
-      const normalized = nextSkill.get(policy) / Math.exp(meanLog);
-      maxDelta = Math.max(maxDelta, Math.abs(Math.log(normalized) - Math.log(skill.get(policy))));
-      skill.set(policy, normalized);
-    }
-    if (maxDelta < 1e-7) break;
-  }
-
-  return policyList
-    .map((policy) => ({
-      policy,
-      score: Math.round(Math.log(skill.get(policy)) * 200 + 1500),
-      evals: evalCounts.get(policy) || 0,
-    }))
-    .sort((a, b) => b.score - a.score || b.evals - a.evals || a.policy.localeCompare(b.policy))
-    .map((row, index) => ({
-      ...row,
-      rank: index + 1,
-    }));
-}
-
-function boardByPolicy(board) {
-  return Object.fromEntries(board.map((row) => [row.policy, row]));
-}
-
-function buildRankingImpacts(rows) {
-  const baseBoard = fitBtLeaderboard(rows);
-  const officialPolicies = baseBoard.filter(
-    (row) => row.evals >= OFFICIAL_POLICY_EVAL_THRESHOLD
-  );
-  const orgLabels = [...new Set(rows.map((row) => row.org))].sort((a, b) =>
-    a.localeCompare(b)
-  );
-  const byOrg = {};
-
-  for (const org of orgLabels) {
-    const withoutBoard = fitBtLeaderboard(rows.filter((row) => row.org !== org));
-    const withoutByPolicy = boardByPolicy(withoutBoard);
-    const changes = officialPolicies
-      .map((baseRow) => {
-        const withoutRow = withoutByPolicy[baseRow.policy];
-        const withoutRank = withoutRow?.rank ?? null;
-        const withoutScore = withoutRow?.score ?? null;
-        return {
-          policy: baseRow.policy,
-          baseRank: baseRow.rank,
-          withoutRank,
-          rankDelta:
-            withoutRank === null ? null : baseRow.rank - withoutRank,
-          baseScore: baseRow.score,
-          withoutScore,
-          scoreDelta:
-            withoutScore === null ? null : withoutScore - baseRow.score,
-          baseEvals: baseRow.evals,
-          withoutEvals: withoutRow?.evals ?? 0,
-        };
-      })
-      .sort((a, b) => {
-        const aRank = Math.abs(a.rankDelta ?? 0);
-        const bRank = Math.abs(b.rankDelta ?? 0);
-        const aScore = Math.abs(a.scoreDelta ?? 0);
-        const bScore = Math.abs(b.scoreDelta ?? 0);
-        return bRank - aRank || bScore - aScore || a.policy.localeCompare(b.policy);
-      });
-    const largestChange = changes[0] || null;
-
-    byOrg[org] = {
-      label: org,
-      baseline: baseBoard.slice(0, 10),
-      withoutOrg: withoutBoard.slice(0, 10),
-      topChanges: changes.slice(0, 8),
-      largestChange,
-      maxAbsRankDelta: Math.max(0, ...changes.map((change) => Math.abs(change.rankDelta ?? 0))),
-      maxAbsScoreDelta: Math.max(0, ...changes.map((change) => Math.abs(change.scoreDelta ?? 0))),
-    };
-  }
-
-  const largestOrgImpact = Object.values(byOrg)
-    .filter((impact) => impact.largestChange)
-    .sort(
-      (a, b) =>
-        b.maxAbsRankDelta - a.maxAbsRankDelta ||
-        b.maxAbsScoreDelta - a.maxAbsScoreDelta ||
-        a.label.localeCompare(b.label)
-    )[0] || null;
-
-  return {
-    model: 'Bradley-Terry rerun on public counted A/B evals; ties split evenly.',
-    officialPolicyEvalThreshold: OFFICIAL_POLICY_EVAL_THRESHOLD,
-    baseline: baseBoard,
-    byOrg,
-    largestOrgImpact,
-  };
-}
-
 function normalizeRequestStats(requestStats) {
   if (!requestStats || !Array.isArray(requestStats.organizations)) {
     return { byOrg: {}, totals: null, largestRejection: null };
@@ -475,7 +324,6 @@ function buildIntegritySignals({
   policies,
   evaluatorOrganizations,
   pairs,
-  rankingImpacts,
   requestStats,
 }) {
   const officialPolicies = policies.filter(
@@ -513,16 +361,6 @@ function buildIntegritySignals({
     officialPolicyEvalThreshold: OFFICIAL_POLICY_EVAL_THRESHOLD,
     minimumRequestedForDropoffSignal: requestStats.minimumRequestedForDropoffSignal,
     largestRejection: requestStats.largestRejection,
-    largestLeaveOneOrgRankShift: rankingImpacts.largestOrgImpact
-      ? {
-          evaluatorOrg: rankingImpacts.largestOrgImpact.label,
-          policy: rankingImpacts.largestOrgImpact.largestChange.policy,
-          rankDelta: rankingImpacts.largestOrgImpact.largestChange.rankDelta,
-          scoreDelta: rankingImpacts.largestOrgImpact.largestChange.scoreDelta,
-          baseRank: rankingImpacts.largestOrgImpact.largestChange.baseRank,
-          withoutRank: rankingImpacts.largestOrgImpact.largestChange.withoutRank,
-        }
-      : null,
     largestOrgShare: topOrg
       ? {
           evaluatorOrg: topOrg.label,
@@ -553,7 +391,6 @@ export function buildTransparencyStats(evaluations = [], requestStatsPayload = n
   const evaluatorAccounts = new Map();
   const pairs = new Map();
   const globalMonths = new Map();
-  const rankingRows = [];
 
   let totalEvals = 0;
   let tieCount = 0;
@@ -585,12 +422,6 @@ export function buildTransparencyStats(evaluations = [], requestStatsPayload = n
       policyB,
       languageInstruction: evaluation.language_instruction,
     };
-    rankingRows.push({
-      policyA,
-      policyB,
-      preference,
-      org: lab,
-    });
 
     totalEvals += 1;
     if (preference === 'TIE') tieCount += 1;
@@ -682,7 +513,6 @@ export function buildTransparencyStats(evaluations = [], requestStatsPayload = n
     .map(finalizePairStats)
     .sort((a, b) => b.count - a.count || a.policy1.localeCompare(b.policy1));
   const requestStats = normalizeRequestStats(requestStatsPayload);
-  const rankingImpacts = buildRankingImpacts(rankingRows);
   const knownOrgLabels = new Set(evaluatorOrganizationList.map((org) => org.label));
   const requestOnlyOrgs = Object.values(requestStats.byOrg)
     .filter((org) => !knownOrgLabels.has(org.label))
@@ -704,7 +534,6 @@ export function buildTransparencyStats(evaluations = [], requestStatsPayload = n
     .map((org) => ({
       ...org,
       requestStats: requestStats.byOrg[org.label] || null,
-      rankingImpact: rankingImpacts.byOrg[org.label] || null,
     }))
     .sort((a, b) => {
       const aRequested = a.requestStats?.requested || 0;
@@ -729,11 +558,9 @@ export function buildTransparencyStats(evaluations = [], requestStatsPayload = n
       policies: policyList,
       evaluatorOrganizations: orgsWithAuditStats,
       pairs: pairList,
-      rankingImpacts,
       requestStats,
     }),
     requestStats,
-    rankingImpacts,
     policies: policyList,
     policyByName,
     evaluatorOrganizations: orgsWithAuditStats,

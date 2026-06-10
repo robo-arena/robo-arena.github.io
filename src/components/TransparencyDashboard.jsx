@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { HiChevronDown, HiChevronUp, HiOutlineDownload } from 'react-icons/hi';
+import { apiGetJson } from '../api';
 import { downloadJson, isRankingIncludedEvaluation } from '../utils/transparencyStats';
 import './transparency.css';
 
@@ -23,12 +24,6 @@ function formatScoreDelta(value) {
   if (value === null || value === undefined || Number.isNaN(value)) return 'n/a';
   if (value === 0) return '0 Elo';
   return `${value > 0 ? '+' : ''}${value} Elo`;
-}
-
-function formatRankMove(value) {
-  if (value === null || value === undefined || Number.isNaN(value)) return 'n/a';
-  const abs = Math.abs(value);
-  return `${abs} rank${abs === 1 ? '' : 's'}`;
 }
 
 function toneFromValue(value, watchAt, reviewAt) {
@@ -66,7 +61,6 @@ function IntegritySignals({ signals }) {
 
   const topOrg = signals.largestOrgShare;
   const policyShare = signals.highestPolicyOrgShare;
-  const rankShift = signals.largestLeaveOneOrgRankShift;
   const rejection = signals.largestRejection;
   const thinCoverage = signals.thinOfficialCoverage;
   const pairConcentration = signals.pairConcentration;
@@ -81,18 +75,6 @@ function IntegritySignals({ signals }) {
         'Requested evals are assigned A/B sessions. Performed evals submitted a terminal preference. High drop-off can indicate discarded or abandoned assignments.',
       tone: toneFromValue(rejection.rejection_rate, 50, 80),
       title: `Largest request-to-performed drop-off among evaluator orgs with at least ${signals.minimumRequestedForDropoffSignal} requested evals.`,
-    },
-    rankShift && {
-      key: 'rank-shift',
-      label: 'Rank Sensitivity',
-      value: formatRankMove(rankShift.rankDelta),
-      detail: `${rankShift.policy}: #${rankShift.baseRank} to ${
-        rankShift.withoutRank ? `#${rankShift.withoutRank}` : 'out'
-      }`,
-      explanation:
-        'Reruns the public counted A/B ranking after removing one evaluator org. This shows the largest official-policy rank movement.',
-      tone: toneFromValue(Math.abs(rankShift.rankDelta || 0), 1, 2),
-      title: `Largest leave-one-evaluator-org-out rank movement (${rankShift.evaluatorOrg}).`,
     },
     topOrg && {
       key: 'top-org',
@@ -209,7 +191,20 @@ function RankChangeList({ changes }) {
   );
 }
 
-function LeaderboardImpact({ impact, orgLabel }) {
+function LeaderboardImpact({ impact, orgLabel, isLoading }) {
+  if (isLoading) {
+    return <p className="transparency-empty">Computing official rerun for this evaluator org.</p>;
+  }
+
+  if (impact?.status === 'warming') {
+    return (
+      <p className="transparency-empty">
+        Official rerun cache is warming. This uses the same Bradley-Terry Davidson
+        ranking path as the leaderboard and will appear shortly.
+      </p>
+    );
+  }
+
   if (!impact) {
     return <p className="transparency-empty">No leave-one-org ranking rerun available.</p>;
   }
@@ -217,7 +212,7 @@ function LeaderboardImpact({ impact, orgLabel }) {
   return (
     <div className="transparency-leaderboard-impact">
       <p>
-        Public counted A/B ranking rerun with <strong>{orgLabel}</strong> removed.
+        Official Bradley-Terry Davidson leaderboard rerun with <strong>{orgLabel}</strong> removed.
       </p>
       <div className="transparency-leaderboard-impact-grid">
         <div>
@@ -326,11 +321,10 @@ function ActivityBars({ buckets }) {
   );
 }
 
-function EvaluatorOrgDetails({ org }) {
+function EvaluatorOrgDetails({ org, rankImpact, isRankImpactLoading }) {
   const topPolicies = org.policies;
   const topPairs = org.pairs;
   const requestStats = org.requestStats;
-  const rankImpact = org.rankingImpact;
 
   return (
     <div className="evaluator-org-detail">
@@ -356,7 +350,11 @@ function EvaluatorOrgDetails({ org }) {
 
         <section className="evaluator-org-wide-section">
           <h5>Leave-One-Org Ranking</h5>
-          <LeaderboardImpact impact={rankImpact} orgLabel={org.label} />
+          <LeaderboardImpact
+            impact={rankImpact}
+            orgLabel={org.label}
+            isLoading={isRankImpactLoading}
+          />
         </section>
 
         <section>
@@ -392,6 +390,9 @@ function EvaluatorOrgDetails({ org }) {
 export default function TransparencyDashboard({ evaluations, stats, filteredCount, query }) {
   const [activeOrgLabel, setActiveOrgLabel] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [orgImpacts, setOrgImpacts] = useState({});
+  const [loadingImpactLabel, setLoadingImpactLabel] = useState(null);
+  const [impactRetryNonce, setImpactRetryNonce] = useState(0);
 
   const orgs = useMemo(() => stats?.evaluatorOrganizations || [], [stats]);
   const activeOrg = useMemo(
@@ -405,6 +406,58 @@ export default function TransparencyDashboard({ evaluations, stats, filteredCoun
       setActiveOrgLabel(orgs[0].label);
     }
   }, [activeOrgLabel, orgs]);
+
+  const activeImpact = activeOrg ? orgImpacts[activeOrg.label] : undefined;
+  const activeImpactIsWarming = activeImpact?.status === 'warming';
+  const hasImpactResult = activeOrg
+    ? Object.prototype.hasOwnProperty.call(orgImpacts, activeOrg.label) &&
+      !activeImpactIsWarming
+    : false;
+
+  useEffect(() => {
+    if (!isExpanded || !activeOrg?.label || activeOrg.count === 0 || hasImpactResult) {
+      return undefined;
+    }
+
+    let isCancelled = false;
+    const label = activeOrg.label;
+    const retryDelay = activeImpactIsWarming ? 30000 : 0;
+    const timeoutId = window.setTimeout(() => {
+      setLoadingImpactLabel(label);
+
+      apiGetJson(`/evaluator_leaderboard_impact?org=${encodeURIComponent(label)}`)
+        .then((data) => {
+          if (!isCancelled) {
+            setOrgImpacts((prev) => ({ ...prev, [label]: data }));
+            if (data?.status === 'warming') {
+              setImpactRetryNonce((value) => value + 1);
+            }
+          }
+        })
+        .catch(() => {
+          if (!isCancelled) {
+            setOrgImpacts((prev) => ({ ...prev, [label]: null }));
+          }
+        })
+        .finally(() => {
+          if (!isCancelled) {
+            setLoadingImpactLabel((current) => (current === label ? null : current));
+          }
+        });
+    }, retryDelay);
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    activeOrg?.label,
+    activeOrg?.count,
+    activeImpactIsWarming,
+    hasImpactResult,
+    impactRetryNonce,
+    isExpanded,
+  ]);
 
   if (!stats || stats.totalEvals === 0) {
     return (
@@ -433,7 +486,6 @@ export default function TransparencyDashboard({ evaluations, stats, filteredCoun
     evaluator_organizations: stats.evaluatorOrganizations,
     integrity_signals: stats.integritySignals,
     request_stats: stats.requestStats,
-    ranking_impacts: stats.rankingImpacts,
     policies: stats.policies,
     pairs: stats.pairs,
   };
@@ -507,7 +559,18 @@ export default function TransparencyDashboard({ evaluations, stats, filteredCoun
             })}
           </div>
 
-          {activeOrg && <EvaluatorOrgDetails org={activeOrg} />}
+          {activeOrg && (
+            <EvaluatorOrgDetails
+              org={activeOrg}
+              rankImpact={activeImpact}
+              isRankImpactLoading={
+                activeOrg.count > 0 &&
+                !hasImpactResult &&
+                loadingImpactLabel === activeOrg.label &&
+                !activeImpactIsWarming
+              }
+            />
+          )}
         </div>
       )}
     </section>
