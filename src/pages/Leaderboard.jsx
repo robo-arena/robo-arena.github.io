@@ -71,7 +71,6 @@ export default function Leaderboard() {
             aria-pressed={leaderboardScope === 'main'}
           >
             <span>Official</span>
-            <strong>{MAIN_LEADERBOARD_MIN_EVALS}+ evals</strong>
           </button>
           <button
             type="button"
@@ -80,8 +79,12 @@ export default function Leaderboard() {
             aria-pressed={leaderboardScope === 'all'}
           >
             <span>All Policies</span>
-            <strong>{board.length.toLocaleString()} total</strong>
           </button>
+          {board.length > 0 && (
+            <p className="lb-scope-summary">
+              {scopeNote}
+            </p>
+          )}
         </div>
 
         <div className="lb-filter">
@@ -103,12 +106,6 @@ export default function Leaderboard() {
           </label>
         </div>
       </div>
-
-      {board.length > 0 && (
-        <p className="lb-scope-summary">
-          {scopeNote}
-        </p>
-      )}
 
       {board.length === 0 ? (
         <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading…</p>
