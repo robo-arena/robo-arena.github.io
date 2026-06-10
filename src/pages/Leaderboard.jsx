@@ -91,6 +91,7 @@ export default function Leaderboard() {
                 <tr>
                   <th>Rank</th>
                   <th>Policy</th>
+                  <th className="center lb-status-col">Status</th>
                   <th className="right">Score</th>
                   <th className="right">SD</th>
                   <th className="right"># A/B&nbsp;Evals</th>
@@ -104,7 +105,6 @@ export default function Leaderboard() {
                     <td className="left">{idx + 1}</td>
                     <td>
                       <div className="lb-policy-cell">
-                        <PolicyStatusIndicators row={r} />
                         <span className="lb-policy-name">{r.policy}</span>
                         {POLICY_ARXIV_LINKS[r.policy] && (
                           <a
@@ -119,6 +119,9 @@ export default function Leaderboard() {
                           </a>
                         )}
                       </div>
+                    </td>
+                    <td className="lb-status-cell">
+                      <PolicyStatusIndicators row={r} />
                     </td>
                     <td className="right">{r.score}</td>
                     <td className="right">{r.std}</td>

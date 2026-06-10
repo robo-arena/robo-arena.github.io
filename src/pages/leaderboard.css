@@ -6,11 +6,13 @@
 
 .lb-table-wrap {
   width: 100%;
+  overflow-x: auto;
 }
 
 /* prettier leaderboard table */
 .lb-table {
   width: 100%;
+  min-width: 820px;
   border-collapse: separate;
   border-spacing: 0;
   margin: 1.5rem auto;
@@ -80,8 +82,13 @@
 .lb-status-group {
   display: inline-flex;
   align-items: center;
-  gap: 0.28rem;
-  margin-right: 0.05rem;
+  justify-content: center;
+  gap: 0.26rem;
+  min-width: 2.9rem;
+  padding: 0.18rem 0.36rem;
+  border: 1px solid rgba(104, 123, 130, 0.16);
+  border-radius: 999px;
+  background: rgba(248, 250, 250, 0.9);
 }
 
 .lb-active-dot,
@@ -95,8 +102,8 @@
 }
 
 .lb-active-dot {
-  width: 0.68rem;
-  height: 0.68rem;
+  width: 0.62rem;
+  height: 0.62rem;
   border-radius: 999px;
   border: 2px solid #ffffff;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.16);
@@ -124,10 +131,10 @@
 }
 
 .lb-uptime-trigger {
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 1rem;
+  height: 1rem;
   color: #597078;
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   border-radius: 999px;
   transition:
     color 0.15s ease,
@@ -215,6 +222,14 @@
   vertical-align: middle;
 }
 
+.lb-status-col,
+.lb-status-cell {
+  width: 78px;
+  min-width: 78px;
+  text-align: center;
+  white-space: nowrap;
+}
+
 .lb-table td.oss-cell {
   text-align: right;      /* push toward header edge  */
   padding-right: 50px;    /* tweak until it looks good */
@@ -223,22 +238,22 @@
 
 /* ──────────────────────────────────────────────────────────────
    Column-specific tweaks (by position)
-   Columns: 1 Rank, 2 Policy, 3 Score, 4 SD, 5 A/B Evals, 6 Open Source
+   Columns: 1 Rank, 2 Policy, 3 Status, 4 Score, 5 SD, 6 A/B Evals, 7 Open Source
    ────────────────────────────────────────────────────────────── */
 
-/* More separation between Score (3) and SD (4) */
-.lb-table th:nth-child(3),
-.lb-table td:nth-child(3) {  /* Score */
+/* More separation between Score (4) and SD (5) */
+.lb-table th:nth-child(4),
+.lb-table td:nth-child(4) {  /* Score */
   padding-right: 18px;       /* was ~10px; adds extra gap before SD */
 }
-.lb-table th:nth-child(4),
-.lb-table td:nth-child(4) {  /* SD */
+.lb-table th:nth-child(5),
+.lb-table td:nth-child(5) {  /* SD */
   padding-left: 24px;        /* add a bit of space from Score column */
 }
 
-/* Nudge A/B Evals (5) slightly to the right (right-aligned → reduce padding-right) */
-.lb-table th:nth-child(5),
-.lb-table td:nth-child(5) {  /* A/B Evals */
+/* Nudge A/B Evals (6) slightly to the right (right-aligned → reduce padding-right) */
+.lb-table th:nth-child(6),
+.lb-table td:nth-child(6) {  /* A/B Evals */
   padding-right: 6px;        /* a touch less than 10px moves content right */
 }
 
