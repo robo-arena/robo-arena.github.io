@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { HiOutlineDownload } from 'react-icons/hi';
+import { HiChevronDown, HiChevronUp, HiOutlineDownload } from 'react-icons/hi';
 import { downloadJson, isRankingIncludedEvaluation } from '../utils/transparencyStats';
 import './transparency.css';
 
@@ -19,9 +19,16 @@ function formatDate(value) {
   return DATE_FORMAT.format(new Date(value));
 }
 
-function formatPoints(value) {
+function formatScoreDelta(value) {
   if (value === null || value === undefined || Number.isNaN(value)) return 'n/a';
-  return `${value.toFixed(value % 1 === 0 ? 0 : 1)} pp`;
+  if (value === 0) return '0 Elo';
+  return `${value > 0 ? '+' : ''}${value} Elo`;
+}
+
+function formatRankMove(value) {
+  if (value === null || value === undefined || Number.isNaN(value)) return 'n/a';
+  const abs = Math.abs(value);
+  return `${abs} rank${abs === 1 ? '' : 's'}`;
 }
 
 function toneFromValue(value, watchAt, reviewAt) {
@@ -40,9 +47,13 @@ function DownloadButton({ children, onClick }) {
   );
 }
 
-function IntegritySignalCard({ label, value, detail, tone = 'neutral', title }) {
+function IntegritySignalCard({ label, value, detail, explanation, tone = 'neutral', title }) {
   return (
-    <article className={`integrity-signal-card ${tone}`} title={title || detail}>
+    <article
+      className={`integrity-signal-card ${tone}`}
+      tabIndex={0}
+      title={title || explanation || detail}
+    >
       <span>{label}</span>
       <strong>{value}</strong>
       <small>{detail}</small>
@@ -55,17 +66,41 @@ function IntegritySignals({ signals }) {
 
   const topOrg = signals.largestOrgShare;
   const policyShare = signals.highestPolicyOrgShare;
-  const winRateSwing = signals.largestTopOrgWinRateSwing;
-  const tieOutlier = signals.tieRateOutlier;
+  const rankShift = signals.largestLeaveOneOrgRankShift;
+  const rejection = signals.largestRejection;
   const thinCoverage = signals.thinOfficialCoverage;
   const pairConcentration = signals.pairConcentration;
 
   const cards = [
+    rejection && {
+      key: 'request-dropoff',
+      label: 'Request Drop-Off',
+      value: formatPercent(rejection.rejection_rate),
+      detail: `${rejection.label} · ${rejection.performed.toLocaleString()}/${rejection.requested.toLocaleString()} performed`,
+      explanation:
+        'Requested evals are assigned A/B sessions. Performed evals submitted a terminal preference. High drop-off can indicate discarded or abandoned assignments.',
+      tone: toneFromValue(rejection.rejection_rate, 50, 80),
+      title: `Largest request-to-performed drop-off among evaluator orgs with at least ${signals.minimumRequestedForDropoffSignal} requested evals.`,
+    },
+    rankShift && {
+      key: 'rank-shift',
+      label: 'Rank Sensitivity',
+      value: formatRankMove(rankShift.rankDelta),
+      detail: `${rankShift.policy}: #${rankShift.baseRank} to ${
+        rankShift.withoutRank ? `#${rankShift.withoutRank}` : 'out'
+      }`,
+      explanation:
+        'Reruns the public counted A/B ranking after removing one evaluator org. This shows the largest official-policy rank movement.',
+      tone: toneFromValue(Math.abs(rankShift.rankDelta || 0), 1, 2),
+      title: `Largest leave-one-evaluator-org-out rank movement (${rankShift.evaluatorOrg}).`,
+    },
     topOrg && {
       key: 'top-org',
       label: 'Top Org Share',
       value: formatPercent(topOrg.percent),
       detail: `${topOrg.evaluatorOrg} · ${topOrg.evals.toLocaleString()} evals`,
+      explanation:
+        'Largest share of counted public A/B evaluations from one evaluator organization.',
       tone: toneFromValue(topOrg.percent, 25, 40),
       title: 'Largest share of counted A/B evaluations from one evaluator organization.',
     },
@@ -74,32 +109,18 @@ function IntegritySignals({ signals }) {
       label: 'Policy Dependence',
       value: formatPercent(policyShare.percent),
       detail: `${policyShare.policy} from ${policyShare.evaluatorOrg}`,
+      explanation:
+        'For official policies, this is the largest share of a policy score coming from one evaluator org.',
       tone: toneFromValue(policyShare.percent, 55, 70),
       title: 'Largest share of one official policy\'s evidence from a single evaluator organization.',
-    },
-    winRateSwing && {
-      key: 'top-org-swing',
-      label: 'Top-Org Swing',
-      value: formatPoints(winRateSwing.swingPercent),
-      detail: `${winRateSwing.policy}: ${formatPercent(winRateSwing.overallWinRate)} to ${formatPercent(
-        winRateSwing.withoutTopOrgWinRate
-      )}`,
-      tone: toneFromValue(winRateSwing.swingPercent, 10, 20),
-      title: `Largest non-tie win-rate change after removing the top contributing org (${winRateSwing.evaluatorOrg}).`,
-    },
-    tieOutlier && {
-      key: 'tie-outlier',
-      label: 'Tie-Rate Outlier',
-      value: formatPoints(tieOutlier.deviationPercent),
-      detail: `${tieOutlier.evaluatorOrg}: ${formatPercent(tieOutlier.tieRate)} ties`,
-      tone: toneFromValue(tieOutlier.deviationPercent, 15, 25),
-      title: `Largest tie-rate deviation among orgs with at least ${signals.minimumOrgOutlierEvals} counted evals.`,
     },
     thinCoverage && {
       key: 'thin-coverage',
       label: 'Thin Coverage',
       value: thinCoverage.count.toLocaleString(),
       detail: `official policies with fewer than 3 evaluator orgs`,
+      explanation:
+        'Counts official policies with 100+ A/B evals but fewer than three evaluator organizations contributing evidence.',
       tone: thinCoverage.count > 2 ? 'review' : thinCoverage.count > 0 ? 'watch' : 'neutral',
       title: 'Official policies with 100+ A/B evals but fewer than 3 contributing evaluator organizations.',
     },
@@ -108,6 +129,8 @@ function IntegritySignals({ signals }) {
       label: 'Top Pair Share',
       value: formatPercent(pairConcentration.percent),
       detail: `${pairConcentration.policy1} vs ${pairConcentration.policy2} · ${pairConcentration.evals.toLocaleString()} evals`,
+      explanation:
+        'Largest fraction of counted A/B evaluations spent on one policy pair. High concentration can make rankings easier to steer.',
       tone: toneFromValue(pairConcentration.percent, 12, 20),
       title: 'Largest share of counted A/B evaluations from a single policy pair.',
     },
@@ -117,14 +140,98 @@ function IntegritySignals({ signals }) {
 
   return (
     <div className="integrity-signal-strip">
-      <div className="integrity-signal-header">
-        <h4>Integrity Signals</h4>
-        <span>Public counted evals</span>
-      </div>
       <div className="integrity-signal-row" tabIndex={0} aria-label="Integrity signals">
         {cards.map(({ key, ...card }) => (
           <IntegritySignalCard key={key} {...card} />
         ))}
+      </div>
+    </div>
+  );
+}
+
+function RequestFunnel({ stats }) {
+  if (!stats) {
+    return <p className="transparency-empty">Request stats unavailable until the server exposes aggregate session counts.</p>;
+  }
+
+  return (
+    <div className="transparency-mini-stats">
+      <span>
+        <strong>{stats.requested.toLocaleString()}</strong>
+        Requested
+      </span>
+      <span>
+        <strong>{stats.performed.toLocaleString()}</strong>
+        Performed
+      </span>
+      <span>
+        <strong>{formatPercent(stats.rejection_rate)}</strong>
+        Drop-off
+      </span>
+      <span>
+        <strong>{stats.counted.toLocaleString()}</strong>
+        Valid
+      </span>
+    </div>
+  );
+}
+
+function LeaderboardMiniList({ rows, emptyText }) {
+  if (!rows?.length) return <p className="transparency-empty">{emptyText}</p>;
+
+  return (
+    <div className="transparency-mini-leaderboard">
+      {rows.slice(0, 6).map((row) => (
+        <div className="transparency-mini-rank-row" key={`${row.rank}-${row.policy}`}>
+          <span title={row.policy}>#{row.rank} {row.policy}</span>
+          <strong>{row.score}</strong>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RankChangeList({ changes }) {
+  if (!changes?.length) return <p className="transparency-empty">No official-policy rank changes.</p>;
+
+  return (
+    <div className="transparency-rank-change-list">
+      {changes.slice(0, 6).map((change) => (
+        <div className="transparency-rank-change-row" key={change.policy}>
+          <span title={change.policy}>{change.policy}</span>
+          <small>
+            #{change.baseRank} to {change.withoutRank ? `#${change.withoutRank}` : 'out'} ·{' '}
+            {formatScoreDelta(change.scoreDelta)}
+          </small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LeaderboardImpact({ impact, orgLabel }) {
+  if (!impact) {
+    return <p className="transparency-empty">No leave-one-org ranking rerun available.</p>;
+  }
+
+  return (
+    <div className="transparency-leaderboard-impact">
+      <p>
+        Public counted A/B ranking rerun with <strong>{orgLabel}</strong> removed.
+      </p>
+      <div className="transparency-leaderboard-impact-grid">
+        <div>
+          <h6>Current</h6>
+          <LeaderboardMiniList rows={impact.baseline} emptyText="No baseline rows." />
+        </div>
+        <div>
+          <h6>Without Org</h6>
+          <LeaderboardMiniList rows={impact.withoutOrg} emptyText="No rerun rows." />
+        </div>
+        <div>
+          <h6>Largest Moves</h6>
+          <RankChangeList changes={impact.topChanges} />
+        </div>
       </div>
     </div>
   );
@@ -220,8 +327,10 @@ function ActivityBars({ buckets }) {
 }
 
 function EvaluatorOrgDetails({ org }) {
-  const topPolicies = org.policies.slice(0, 6);
-  const topPairs = org.pairs.slice(0, 6);
+  const topPolicies = org.policies;
+  const topPairs = org.pairs;
+  const requestStats = org.requestStats;
+  const rankImpact = org.rankingImpact;
 
   return (
     <div className="evaluator-org-detail">
@@ -229,13 +338,27 @@ function EvaluatorOrgDetails({ org }) {
         <div>
           <h4>{org.label}</h4>
           <span>
-            {org.count.toLocaleString()} evals · {org.policyCount} policies · {org.pairCount} pairs
+            {org.count.toLocaleString()} counted evals · {org.policyCount} policies · {org.pairCount} pairs
           </span>
         </div>
-        <strong>{formatPercent(org.tieRate)} ties</strong>
+        <strong>
+          {requestStats
+            ? `${formatPercent(requestStats.rejection_rate)} drop-off`
+            : `${formatPercent(org.tieRate)} ties`}
+        </strong>
       </div>
 
       <div className="evaluator-org-detail-rail" tabIndex={0} aria-label={`Statistics for ${org.label}`}>
+        <section>
+          <h5>Request Funnel</h5>
+          <RequestFunnel stats={requestStats} />
+        </section>
+
+        <section className="evaluator-org-wide-section">
+          <h5>Leave-One-Org Ranking</h5>
+          <LeaderboardImpact impact={rankImpact} orgLabel={org.label} />
+        </section>
+
         <section>
           <h5>Policy Coverage</h5>
           <CompactBarList
@@ -268,6 +391,7 @@ function EvaluatorOrgDetails({ org }) {
 
 export default function TransparencyDashboard({ evaluations, stats, filteredCount, query }) {
   const [activeOrgLabel, setActiveOrgLabel] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const orgs = useMemo(() => stats?.evaluatorOrganizations || [], [stats]);
   const activeOrg = useMemo(
@@ -308,12 +432,14 @@ export default function TransparencyDashboard({ evaluations, stats, filteredCoun
     },
     evaluator_organizations: stats.evaluatorOrganizations,
     integrity_signals: stats.integritySignals,
+    request_stats: stats.requestStats,
+    ranking_impacts: stats.rankingImpacts,
     policies: stats.policies,
     pairs: stats.pairs,
   };
 
   return (
-    <section className="transparency-dashboard evaluator-org-panel">
+    <section className={`transparency-dashboard evaluator-org-panel ${isExpanded ? 'expanded' : 'collapsed'}`}>
       <div className="evaluator-org-panel-header">
         <div>
           <h3>Evaluator Org Statistics</h3>
@@ -327,6 +453,15 @@ export default function TransparencyDashboard({ evaluations, stats, filteredCoun
           </p>
         </div>
         <div className="transparency-actions">
+          <button
+            type="button"
+            className="transparency-expand-btn"
+            onClick={() => setIsExpanded((value) => !value)}
+            aria-expanded={isExpanded}
+          >
+            {isExpanded ? <HiChevronUp aria-hidden="true" /> : <HiChevronDown aria-hidden="true" />}
+            {isExpanded ? 'Hide Details' : 'Show Details'}
+          </button>
           <DownloadButton
             onClick={() =>
               downloadJson('roboarena-counted-ab-evaluations.json', {
@@ -350,28 +485,31 @@ export default function TransparencyDashboard({ evaluations, stats, filteredCoun
 
       <IntegritySignals signals={stats.integritySignals} />
 
-      <div className="evaluator-org-layout">
-        <div className="evaluator-org-list" aria-label="Evaluator organizations">
-          {orgs.map((org) => {
-            const isActive = org.label === activeOrg?.label;
-            return (
-              <button
-                type="button"
-                className={`evaluator-org-item ${isActive ? 'active' : ''}`}
-                key={org.label}
-                onClick={() => setActiveOrgLabel(org.label)}
-                onFocus={() => setActiveOrgLabel(org.label)}
-                onMouseEnter={() => setActiveOrgLabel(org.label)}
-              >
-                <span title={org.label}>{org.label}</span>
-                <strong>{org.count.toLocaleString()}</strong>
-              </button>
-            );
-          })}
-        </div>
+      {isExpanded && (
+        <div className="evaluator-org-layout">
+          <div className="evaluator-org-list" aria-label="Evaluator organizations">
+            {orgs.map((org) => {
+              const isActive = org.label === activeOrg?.label;
+              const countLabel = org.requestStats?.requested ?? org.count;
+              return (
+                <button
+                  type="button"
+                  className={`evaluator-org-item ${isActive ? 'active' : ''}`}
+                  key={org.label}
+                  onClick={() => setActiveOrgLabel(org.label)}
+                  onFocus={() => setActiveOrgLabel(org.label)}
+                  onMouseEnter={() => setActiveOrgLabel(org.label)}
+                >
+                  <span title={org.label}>{org.label}</span>
+                  <strong>{countLabel.toLocaleString()}</strong>
+                </button>
+              );
+            })}
+          </div>
 
-        {activeOrg && <EvaluatorOrgDetails org={activeOrg} />}
-      </div>
+          {activeOrg && <EvaluatorOrgDetails org={activeOrg} />}
+        </div>
+      )}
     </section>
   );
 }

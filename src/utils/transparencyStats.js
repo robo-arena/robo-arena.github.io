@@ -1,6 +1,7 @@
 const UNKNOWN_ORG = 'Unknown organization';
 const UNKNOWN_EVALUATOR = 'Unknown evaluator';
 const RANKING_EXCLUDED_POLICIES = new Set(['pi0', 'pi0_fast']);
+const OFFICIAL_POLICY_EVAL_THRESHOLD = 100;
 
 function cleanLabel(value, fallback) {
   if (typeof value !== 'string') return fallback;
@@ -289,20 +290,202 @@ function finalizePairStats(stats) {
   };
 }
 
+function fitBtLeaderboard(rows) {
+  const policies = new Set();
+  const wins = new Map();
+  const evalCounts = new Map();
+  const pairCounts = new Map();
+
+  for (const row of rows) {
+    policies.add(row.policyA);
+    policies.add(row.policyB);
+    increment(evalCounts, row.policyA);
+    increment(evalCounts, row.policyB);
+
+    const [policy1, policy2] = [row.policyA, row.policyB].sort((a, b) => a.localeCompare(b));
+    const pairKey = `${policy1}|||${policy2}`;
+    if (!pairCounts.has(pairKey)) {
+      pairCounts.set(pairKey, { policy1, policy2, count: 0 });
+    }
+    pairCounts.get(pairKey).count += 1;
+
+    if (row.preference === 'A') {
+      increment(wins, row.policyA);
+    } else if (row.preference === 'B') {
+      increment(wins, row.policyB);
+    } else if (row.preference === 'TIE') {
+      increment(wins, row.policyA, 0.5);
+      increment(wins, row.policyB, 0.5);
+    }
+  }
+
+  const policyList = [...policies];
+  if (!policyList.length) return [];
+
+  const skill = new Map(policyList.map((policy) => [policy, 1]));
+
+  for (let iter = 0; iter < 160; iter += 1) {
+    const denominators = new Map(policyList.map((policy) => [policy, 0]));
+
+    for (const pair of pairCounts.values()) {
+      const skill1 = skill.get(pair.policy1) || 1;
+      const skill2 = skill.get(pair.policy2) || 1;
+      const contribution = pair.count / Math.max(1e-9, skill1 + skill2);
+      increment(denominators, pair.policy1, contribution);
+      increment(denominators, pair.policy2, contribution);
+    }
+
+    const nextSkill = new Map();
+    for (const policy of policyList) {
+      const numerator = (wins.get(policy) || 0) + 0.5;
+      const denominator = (denominators.get(policy) || 0) + 0.5;
+      nextSkill.set(policy, Math.max(1e-9, numerator / denominator));
+    }
+
+    const meanLog =
+      policyList.reduce((sum, policy) => sum + Math.log(nextSkill.get(policy)), 0) /
+      policyList.length;
+    let maxDelta = 0;
+    for (const policy of policyList) {
+      const normalized = nextSkill.get(policy) / Math.exp(meanLog);
+      maxDelta = Math.max(maxDelta, Math.abs(Math.log(normalized) - Math.log(skill.get(policy))));
+      skill.set(policy, normalized);
+    }
+    if (maxDelta < 1e-7) break;
+  }
+
+  return policyList
+    .map((policy) => ({
+      policy,
+      score: Math.round(Math.log(skill.get(policy)) * 200 + 1500),
+      evals: evalCounts.get(policy) || 0,
+    }))
+    .sort((a, b) => b.score - a.score || b.evals - a.evals || a.policy.localeCompare(b.policy))
+    .map((row, index) => ({
+      ...row,
+      rank: index + 1,
+    }));
+}
+
+function boardByPolicy(board) {
+  return Object.fromEntries(board.map((row) => [row.policy, row]));
+}
+
+function buildRankingImpacts(rows) {
+  const baseBoard = fitBtLeaderboard(rows);
+  const officialPolicies = baseBoard.filter(
+    (row) => row.evals >= OFFICIAL_POLICY_EVAL_THRESHOLD
+  );
+  const orgLabels = [...new Set(rows.map((row) => row.org))].sort((a, b) =>
+    a.localeCompare(b)
+  );
+  const byOrg = {};
+
+  for (const org of orgLabels) {
+    const withoutBoard = fitBtLeaderboard(rows.filter((row) => row.org !== org));
+    const withoutByPolicy = boardByPolicy(withoutBoard);
+    const changes = officialPolicies
+      .map((baseRow) => {
+        const withoutRow = withoutByPolicy[baseRow.policy];
+        const withoutRank = withoutRow?.rank ?? null;
+        const withoutScore = withoutRow?.score ?? null;
+        return {
+          policy: baseRow.policy,
+          baseRank: baseRow.rank,
+          withoutRank,
+          rankDelta:
+            withoutRank === null ? null : baseRow.rank - withoutRank,
+          baseScore: baseRow.score,
+          withoutScore,
+          scoreDelta:
+            withoutScore === null ? null : withoutScore - baseRow.score,
+          baseEvals: baseRow.evals,
+          withoutEvals: withoutRow?.evals ?? 0,
+        };
+      })
+      .sort((a, b) => {
+        const aRank = Math.abs(a.rankDelta ?? 0);
+        const bRank = Math.abs(b.rankDelta ?? 0);
+        const aScore = Math.abs(a.scoreDelta ?? 0);
+        const bScore = Math.abs(b.scoreDelta ?? 0);
+        return bRank - aRank || bScore - aScore || a.policy.localeCompare(b.policy);
+      });
+    const largestChange = changes[0] || null;
+
+    byOrg[org] = {
+      label: org,
+      baseline: baseBoard.slice(0, 10),
+      withoutOrg: withoutBoard.slice(0, 10),
+      topChanges: changes.slice(0, 8),
+      largestChange,
+      maxAbsRankDelta: Math.max(0, ...changes.map((change) => Math.abs(change.rankDelta ?? 0))),
+      maxAbsScoreDelta: Math.max(0, ...changes.map((change) => Math.abs(change.scoreDelta ?? 0))),
+    };
+  }
+
+  const largestOrgImpact = Object.values(byOrg)
+    .filter((impact) => impact.largestChange)
+    .sort(
+      (a, b) =>
+        b.maxAbsRankDelta - a.maxAbsRankDelta ||
+        b.maxAbsScoreDelta - a.maxAbsScoreDelta ||
+        a.label.localeCompare(b.label)
+    )[0] || null;
+
+  return {
+    model: 'Bradley-Terry rerun on public counted A/B evals; ties split evenly.',
+    officialPolicyEvalThreshold: OFFICIAL_POLICY_EVAL_THRESHOLD,
+    baseline: baseBoard,
+    byOrg,
+    largestOrgImpact,
+  };
+}
+
+function normalizeRequestStats(requestStats) {
+  if (!requestStats || !Array.isArray(requestStats.organizations)) {
+    return { byOrg: {}, totals: null, largestRejection: null };
+  }
+
+  const byOrg = Object.fromEntries(
+    requestStats.organizations.map((org) => [org.label, org])
+  );
+  const minimumRequestedForDropoffSignal = 100;
+  const largestRejection =
+    requestStats.organizations
+      .filter((org) => org.requested >= minimumRequestedForDropoffSignal)
+      .sort(
+        (a, b) =>
+          (b.rejection_rate || 0) - (a.rejection_rate || 0) ||
+          b.requested - a.requested ||
+          a.label.localeCompare(b.label)
+      )[0] || null;
+
+  return {
+    byOrg,
+    totals: requestStats.totals || null,
+    largestRejection,
+    minimumRequestedForDropoffSignal,
+    generatedAt: requestStats.generated_at,
+    source: requestStats.source,
+  };
+}
+
 function buildIntegritySignals({
   totalEvals,
-  globalTieRate,
   policies,
   evaluatorOrganizations,
   pairs,
+  rankingImpacts,
+  requestStats,
 }) {
-  const officialPolicies = policies.filter((policy) => policy.evals >= 100);
+  const officialPolicies = policies.filter(
+    (policy) => policy.evals >= OFFICIAL_POLICY_EVAL_THRESHOLD
+  );
   const coveragePolicies = officialPolicies.length
     ? officialPolicies
     : policies.filter((policy) => policy.evals >= 20);
   const topOrg = evaluatorOrganizations[0] || null;
   const topPair = pairs[0] || null;
-  const minimumOrgOutlierEvals = Math.max(20, Math.ceil(totalEvals * 0.01));
 
   const highestPolicyOrgShare = coveragePolicies
     .filter((policy) => policy.labs.length > 0)
@@ -316,45 +499,6 @@ function buildIntegritySignals({
     }))
     .sort((a, b) => b.percent - a.percent || b.evals - a.evals)[0] || null;
 
-  const largestTopOrgWinRateSwing = coveragePolicies
-    .map((policy) => {
-      const topLab = policy.labs[0];
-      if (!topLab) return null;
-
-      const totalNonTie = policy.wins + policy.losses;
-      const remainingWins = policy.wins - topLab.wins;
-      const remainingLosses = policy.losses - topLab.losses;
-      const remainingNonTie = remainingWins + remainingLosses;
-      if (totalNonTie < 20 || remainingNonTie < 10) return null;
-
-      const overallWinRate = nonTieRate(policy.wins, policy.losses);
-      const withoutTopOrgWinRate = nonTieRate(remainingWins, remainingLosses);
-      if (overallWinRate === null || withoutTopOrgWinRate === null) return null;
-
-      return {
-        policy: policy.policy,
-        evaluatorOrg: topLab.label,
-        topOrgEvals: topLab.count,
-        evals: policy.evals,
-        overallWinRate,
-        withoutTopOrgWinRate,
-        swingPercent: roundPercent(Math.abs(withoutTopOrgWinRate - overallWinRate)),
-      };
-    })
-    .filter(Boolean)
-    .sort((a, b) => b.swingPercent - a.swingPercent || b.evals - a.evals)[0] || null;
-
-  const tieRateOutlier = evaluatorOrganizations
-    .filter((org) => org.count >= minimumOrgOutlierEvals)
-    .map((org) => ({
-      evaluatorOrg: org.label,
-      evals: org.count,
-      tieRate: org.tieRate,
-      globalTieRate,
-      deviationPercent: roundPercent(Math.abs(org.tieRate - globalTieRate)),
-    }))
-    .sort((a, b) => b.deviationPercent - a.deviationPercent || b.evals - a.evals)[0] || null;
-
   const thinOfficialCoveragePolicies = officialPolicies
     .filter((policy) => policy.labCount < 3)
     .sort((a, b) => a.labCount - b.labCount || b.evals - a.evals)
@@ -366,8 +510,19 @@ function buildIntegritySignals({
     }));
 
   return {
-    minimumOrgOutlierEvals,
-    officialPolicyEvalThreshold: 100,
+    officialPolicyEvalThreshold: OFFICIAL_POLICY_EVAL_THRESHOLD,
+    minimumRequestedForDropoffSignal: requestStats.minimumRequestedForDropoffSignal,
+    largestRejection: requestStats.largestRejection,
+    largestLeaveOneOrgRankShift: rankingImpacts.largestOrgImpact
+      ? {
+          evaluatorOrg: rankingImpacts.largestOrgImpact.label,
+          policy: rankingImpacts.largestOrgImpact.largestChange.policy,
+          rankDelta: rankingImpacts.largestOrgImpact.largestChange.rankDelta,
+          scoreDelta: rankingImpacts.largestOrgImpact.largestChange.scoreDelta,
+          baseRank: rankingImpacts.largestOrgImpact.largestChange.baseRank,
+          withoutRank: rankingImpacts.largestOrgImpact.largestChange.withoutRank,
+        }
+      : null,
     largestOrgShare: topOrg
       ? {
           evaluatorOrg: topOrg.label,
@@ -376,8 +531,6 @@ function buildIntegritySignals({
         }
       : null,
     highestPolicyOrgShare,
-    largestTopOrgWinRateSwing,
-    tieRateOutlier,
     thinOfficialCoverage: {
       count: thinOfficialCoveragePolicies.length,
       policies: thinOfficialCoveragePolicies.slice(0, 8),
@@ -394,12 +547,13 @@ function buildIntegritySignals({
   };
 }
 
-export function buildTransparencyStats(evaluations = []) {
+export function buildTransparencyStats(evaluations = [], requestStatsPayload = null) {
   const policies = new Map();
   const evaluatorOrganizations = new Map();
   const evaluatorAccounts = new Map();
   const pairs = new Map();
   const globalMonths = new Map();
+  const rankingRows = [];
 
   let totalEvals = 0;
   let tieCount = 0;
@@ -431,6 +585,12 @@ export function buildTransparencyStats(evaluations = []) {
       policyB,
       languageInstruction: evaluation.language_instruction,
     };
+    rankingRows.push({
+      policyA,
+      policyB,
+      preference,
+      org: lab,
+    });
 
     totalEvals += 1;
     if (preference === 'TIE') tieCount += 1;
@@ -521,6 +681,36 @@ export function buildTransparencyStats(evaluations = []) {
   const pairList = [...pairs.values()]
     .map(finalizePairStats)
     .sort((a, b) => b.count - a.count || a.policy1.localeCompare(b.policy1));
+  const requestStats = normalizeRequestStats(requestStatsPayload);
+  const rankingImpacts = buildRankingImpacts(rankingRows);
+  const knownOrgLabels = new Set(evaluatorOrganizationList.map((org) => org.label));
+  const requestOnlyOrgs = Object.values(requestStats.byOrg)
+    .filter((org) => !knownOrgLabels.has(org.label))
+    .map((org) => ({
+      label: org.label,
+      count: 0,
+      policyCount: 0,
+      pairCount: 0,
+      evaluatorCount: 0,
+      tieRate: 0,
+      policies: [],
+      pairs: [],
+      recentActivity: [],
+      recentEvaluations: [],
+      firstEvalAt: null,
+      lastEvalAt: null,
+    }));
+  const orgsWithAuditStats = [...evaluatorOrganizationList, ...requestOnlyOrgs]
+    .map((org) => ({
+      ...org,
+      requestStats: requestStats.byOrg[org.label] || null,
+      rankingImpact: rankingImpacts.byOrg[org.label] || null,
+    }))
+    .sort((a, b) => {
+      const aRequested = a.requestStats?.requested || 0;
+      const bRequested = b.requestStats?.requested || 0;
+      return b.count - a.count || bRequested - aRequested || a.label.localeCompare(b.label);
+    });
 
   return {
     generatedAt: new Date().toISOString(),
@@ -536,14 +726,17 @@ export function buildTransparencyStats(evaluations = []) {
     recentActivity: recentMonthBuckets(globalMonths, lastTimeMs),
     integritySignals: buildIntegritySignals({
       totalEvals,
-      globalTieRate: roundPercent(percent(tieCount, totalEvals)),
       policies: policyList,
-      evaluatorOrganizations: evaluatorOrganizationList,
+      evaluatorOrganizations: orgsWithAuditStats,
       pairs: pairList,
+      rankingImpacts,
+      requestStats,
     }),
+    requestStats,
+    rankingImpacts,
     policies: policyList,
     policyByName,
-    evaluatorOrganizations: evaluatorOrganizationList,
+    evaluatorOrganizations: orgsWithAuditStats,
     evaluatorAccounts: evaluatorAccountList,
     pairs: pairList,
   };

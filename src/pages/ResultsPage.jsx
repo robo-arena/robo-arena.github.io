@@ -19,6 +19,7 @@ export default function ResultsPage() {
   /* state                                                               */
   /* ------------------------------------------------------------------ */
   const [allEvals, setAllEvals] = useState([])
+  const [requestStats, setRequestStats] = useState(null)
   const [shown, setShown] = useState(10)
   const [query, setQuery] = useState(initialQuery)
   const [shareStatus, setShareStatus] = useState('idle')
@@ -27,10 +28,15 @@ export default function ResultsPage() {
   /* ------------------------------------------------------------------ */
   /* data fetch helper                                                   */
   /* ------------------------------------------------------------------ */
-  const fetchData = () =>
+  const fetchData = () => {
     apiGetJson('/list_ab_evaluations')
       .then((d) => setAllEvals(d.evaluations))
       .catch(console.error)
+
+    apiGetJson('/evaluator_request_stats')
+      .then((d) => setRequestStats(d))
+      .catch(() => setRequestStats(null))
+  }
 
   /* run once on mount */
   useEffect(() => {
@@ -96,8 +102,8 @@ export default function ResultsPage() {
   })
 
   const transparencyStats = useMemo(
-    () => buildTransparencyStats(allEvals),
-    [allEvals]
+    () => buildTransparencyStats(allEvals, requestStats),
+    [allEvals, requestStats]
   )
   const filteredTransparencyCount = useMemo(
     () => filtered.filter(isRankingIncludedEvaluation).length,
