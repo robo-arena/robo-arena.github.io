@@ -255,6 +255,17 @@
   gap: 0.34rem;
 }
 
+.transparency-scroll-list {
+  max-height: 8.6rem;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+  scrollbar-color: rgba(54, 168, 158, 0.55) rgba(119, 144, 151, 0.12);
+}
+
+.transparency-scroll-list-compact {
+  max-height: 4.9rem;
+}
+
 .transparency-bar-row {
   display: grid;
   gap: 0.18rem;

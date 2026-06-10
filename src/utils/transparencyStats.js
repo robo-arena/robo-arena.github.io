@@ -101,7 +101,7 @@ function updateOutcomeCounter(counter, outcome) {
   else if (outcome === 'tie') counter.ties += 1;
 }
 
-function sortedOutcomeCounterItems(counter, total, limit = 6) {
+function sortedOutcomeCounterItems(counter, total, limit = Infinity) {
   return [...counter.values()]
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
     .slice(0, limit)
@@ -212,7 +212,7 @@ function finalizePolicyStats(stats) {
     evaluatorCount: stats.evaluators.size,
     opponentCount: stats.opponents.size,
     topLabShare: roundPercent(percent(topLabCount, stats.evals)),
-    labs: sortedOutcomeCounterItems(stats.labs, stats.evals, 8),
+    labs: sortedOutcomeCounterItems(stats.labs, stats.evals),
     evaluators: sortedCounterItems(stats.evaluators, stats.evals, 8),
     opponents,
     recentActivity: recentMonthBuckets(stats.months, stats.lastTimeMs),

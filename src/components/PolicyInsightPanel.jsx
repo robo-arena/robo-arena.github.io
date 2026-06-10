@@ -53,7 +53,7 @@ function LabOutcomeList({ items, emptyText }) {
   }
 
   return (
-    <div className="transparency-bar-list">
+    <div className="transparency-bar-list transparency-scroll-list transparency-scroll-list-compact">
       {items.map((item) => {
         const hasWinRate = typeof item.winRate === 'number' && !Number.isNaN(item.winRate);
         return (
@@ -84,7 +84,7 @@ function LabCoverageList({ items, emptyText }) {
   }
 
   return (
-    <div className="transparency-bar-list">
+    <div className="transparency-bar-list transparency-scroll-list">
       {items.map((item) => (
         <div className="transparency-bar-row" key={item.label}>
           <div className="transparency-bar-label">
@@ -104,14 +104,13 @@ function LabCoverageList({ items, emptyText }) {
 }
 
 function OpponentList({ opponents }) {
-  const topOpponents = (opponents || []).slice(0, 4);
-  if (topOpponents.length === 0) {
+  if (!opponents || opponents.length === 0) {
     return <p className="transparency-empty">No opponent coverage yet.</p>;
   }
 
   return (
-    <div className="transparency-opponent-list">
-      {topOpponents.map((opponent) => (
+    <div className="transparency-opponent-list transparency-scroll-list">
+      {opponents.map((opponent) => (
         <div className="transparency-opponent-row" key={opponent.policy}>
           <div>
             <span title={opponent.policy}>{opponent.policy}</span>
@@ -181,7 +180,7 @@ export default function PolicyInsightPanel({ policyStats, row }) {
           <div className="policy-insight-section-label policy-insight-section-label-spaced">
             Per evaluator org
           </div>
-          <LabOutcomeList items={policyStats.labs.slice(0, 3)} emptyText="No evaluator outcomes yet." />
+          <LabOutcomeList items={policyStats.labs} emptyText="No evaluator outcomes yet." />
         </section>
 
         <section className="policy-insight-card">
@@ -195,7 +194,7 @@ export default function PolicyInsightPanel({ policyStats, row }) {
               Top org share: {formatPercent(policyStats.topLabShare)}
             </p>
           )}
-          <LabCoverageList items={policyStats.labs.slice(0, 4)} emptyText="No evaluator organizations yet." />
+          <LabCoverageList items={policyStats.labs} emptyText="No evaluator organizations yet." />
         </section>
 
         <section className="policy-insight-card">
