@@ -54,13 +54,18 @@
   padding: 0.24rem 0.48rem;
 }
 
-.policy-insight-track,
-.transparency-grid {
+.policy-insight-track {
   display: flex;
   gap: 0.7rem;
   overflow-x: auto;
   padding-bottom: 0.18rem;
   scrollbar-color: rgba(245, 151, 73, 0.6) rgba(245, 151, 73, 0.12);
+}
+
+.transparency-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem;
 }
 
 .policy-insight-track:focus-visible {
@@ -443,12 +448,10 @@
   align-items: stretch;
 }
 
-.transparency-section {
-  flex-basis: 286px;
-}
-
-.transparency-section-wide {
-  flex-basis: 330px;
+.transparency-dashboard .transparency-section,
+.transparency-dashboard .transparency-section-wide {
+  flex-basis: auto;
+  min-width: 0;
 }
 
 @media (max-width: 760px) {
@@ -464,5 +467,15 @@
 
   .transparency-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .transparency-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .transparency-grid {
+    grid-template-columns: 1fr;
   }
 }
