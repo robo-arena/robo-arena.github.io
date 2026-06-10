@@ -96,10 +96,34 @@
 
 .policy-insight-card h3,
 .transparency-section h3 {
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.48rem;
   color: #2e4050;
   font-size: 0.82rem;
   line-height: 1.1;
+}
+
+.policy-insight-section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+  color: #75848a;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-bottom: 0.42rem;
+  text-transform: uppercase;
+}
+
+.policy-insight-section-label::after {
+  flex: 1 1 auto;
+  height: 1px;
+  background: rgba(119, 144, 151, 0.18);
+  content: '';
+}
+
+.policy-insight-section-label-spaced {
+  margin-top: 0.72rem;
 }
 
 .policy-insight-big-number {
@@ -107,7 +131,7 @@
   font-size: 1.45rem;
   font-weight: 800;
   line-height: 1;
-  margin-bottom: 0.58rem;
+  margin-bottom: 0.52rem;
 }
 
 .policy-insight-big-number span {

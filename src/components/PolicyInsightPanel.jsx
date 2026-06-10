@@ -165,15 +165,16 @@ export default function PolicyInsightPanel({ policyStats, row }) {
 
       <div className="policy-insight-track" tabIndex={0} aria-label="Policy transparency statistics">
         <section className="policy-insight-card">
-          <h3>Outcome Mix</h3>
+          <h3>Win Rates</h3>
+          <div className="policy-insight-section-label">Overall</div>
           <div className="policy-insight-big-number">
             {formatPercent(policyStats.winRate)}
             <span>non-tie win rate</span>
           </div>
           <OutcomeBar stats={policyStats} />
-          <p className="policy-insight-note policy-insight-subnote">
-            By evaluator org
-          </p>
+          <div className="policy-insight-section-label policy-insight-section-label-spaced">
+            Per evaluator org
+          </div>
           <LabOutcomeList items={policyStats.labs.slice(0, 3)} emptyText="No evaluator outcomes yet." />
         </section>
 
