@@ -47,8 +47,8 @@ export default function Leaderboard() {
       : `${mainRows.length} policies with ${MAIN_LEADERBOARD_MIN_EVALS}+ A/B evals`;
   const scopeNote =
     leaderboardScope === 'all'
-      ? 'Exploratory view; low-eval rankings may be noisy.'
-      : 'Official leaderboard; rankings are lower variance at this eval count.';
+      ? `Showing ${visible.length.toLocaleString()} of ${scopeLabel}; exploratory view, low-eval rankings may be noisy.`
+      : `Official leaderboard showing ${visible.length.toLocaleString()} of ${scopeLabel}; rankings are lower variance at this eval count.`;
 
   return (
     <div className="leaderboard-wrap">
@@ -110,8 +110,7 @@ export default function Leaderboard() {
 
       {board.length > 0 && (
         <p className="lb-scope-summary">
-          <span>Showing {visible.length.toLocaleString()} of {scopeLabel}.</span>
-          <strong>{scopeNote}</strong>
+          {scopeNote}
         </p>
       )}
 
