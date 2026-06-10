@@ -175,8 +175,9 @@ function PolicyStatusIndicators({ row }) {
 
   const uptimePercent = formatUptimePercent(status.uptime_percent);
   const sampleCount = Number(status.uptime_sample_count) || 0;
+  const sampleLabel = sampleCount === 1 ? 'check' : 'checks';
   const uptimeTooltip = uptimePercent
-    ? `Recent uptime: ${uptimePercent} over ${formatUptimeWindow(status.uptime_window_hours)} (${sampleCount.toLocaleString()} checks).`
+    ? `Recent uptime: ${uptimePercent} over ${formatUptimeWindow(status.uptime_window_hours)} (${sampleCount.toLocaleString()} ${sampleLabel}).`
     : 'Recent uptime appears after the next health check.';
 
   return (
