@@ -43,8 +43,8 @@ export default function Leaderboard() {
   );
   const scopeNote =
     leaderboardScope === 'all'
-      ? 'All policies · exploratory view with lower-sample results.'
-      : `Official leaderboard · ${MAIN_LEADERBOARD_MIN_EVALS}+ A/B evals for more stable rankings.`;
+      ? 'All policies · includes early results with higher uncertainty.'
+      : `Official leaderboard · ${MAIN_LEADERBOARD_MIN_EVALS}+ A/B evals per policy for more stable rankings.`;
 
   return (
     <div className="leaderboard-wrap">
