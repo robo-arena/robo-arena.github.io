@@ -13,12 +13,14 @@ const POLICY_ARXIV_LINKS = {
   pi0_droid: 'https://arxiv.org/abs/2410.24164',
 };
 
+const MAIN_LEADERBOARD_MIN_EVALS = 100;
+
 export default function Leaderboard() {
   const [board, setBoard] = useState([]);
   const [updated, setUpdated] = useState(null);
   const [ossOnly, setOssOnly] = useState(false);
   const [showChart, setShowChart] = useState(false);
-  const [showLowEvalPolicies, setShowLowEvalPolicies] = useState(false);
+  const [leaderboardScope, setLeaderboardScope] = useState('main');
 
   useEffect(() => {
     apiGetJson('/leaderboard')
@@ -29,19 +31,20 @@ export default function Leaderboard() {
       .catch(console.error);
   }, []);
 
-  const visible = ossOnly ? board.filter((r) => r.open_source) : board;
-  const chartRowsAll = useMemo(
+  const mainRows = useMemo(
+    () => board.filter((row) => (Number(row.num_evals) || 0) >= MAIN_LEADERBOARD_MIN_EVALS),
+    [board]
+  );
+  const scopedRows = leaderboardScope === 'all' ? board : mainRows;
+  const visible = ossOnly ? scopedRows.filter((r) => r.open_source) : scopedRows;
+  const chartRows = useMemo(
     () => [...visible].sort((a, b) => a.score - b.score),
     [visible]
   );
-  const chartRows = useMemo(
-    () => (
-      showLowEvalPolicies
-        ? chartRowsAll
-        : chartRowsAll.filter((row) => (Number(row.num_evals) || 0) >= 100)
-    ),
-    [chartRowsAll, showLowEvalPolicies]
-  );
+  const scopeLabel =
+    leaderboardScope === 'all'
+      ? `${board.length} policies`
+      : `${mainRows.length} policies with ${MAIN_LEADERBOARD_MIN_EVALS}+ A/B evals`;
 
   return (
     <div className="leaderboard-wrap">
@@ -55,35 +58,67 @@ export default function Leaderboard() {
         </p>
       )}
 
-      {/* ------- filter toggle ------- */}
-      <div className="lb-filter">
-        <label className="lb-toggle">
-          <input
-            type="checkbox"
-            checked={showChart}
-            onChange={(e) => setShowChart(e.target.checked)}
-          />{' '}
-          Show chart view
-        </label>
-        <label className="lb-toggle">
-          <input
-            type="checkbox"
-            checked={ossOnly}
-            onChange={(e) => setOssOnly(e.target.checked)}
-          />{' '}
-          Show open-source policies only
-        </label>
+      <div className="lb-controls">
+        <div
+          className="lb-scope-segments"
+          role="group"
+          aria-label="Leaderboard policies"
+        >
+          <button
+            type="button"
+            className={`lb-scope-segment ${leaderboardScope === 'main' ? 'active' : ''}`}
+            onClick={() => setLeaderboardScope('main')}
+            aria-pressed={leaderboardScope === 'main'}
+          >
+            <span>Main</span>
+            <strong>{MAIN_LEADERBOARD_MIN_EVALS}+ evals</strong>
+          </button>
+          <button
+            type="button"
+            className={`lb-scope-segment ${leaderboardScope === 'all' ? 'active' : ''}`}
+            onClick={() => setLeaderboardScope('all')}
+            aria-pressed={leaderboardScope === 'all'}
+          >
+            <span>All Policies</span>
+            <strong>{board.length.toLocaleString()} total</strong>
+          </button>
+        </div>
+
+        <div className="lb-filter">
+          <label className="lb-toggle">
+            <input
+              type="checkbox"
+              checked={showChart}
+              onChange={(e) => setShowChart(e.target.checked)}
+            />{' '}
+            Show chart view
+          </label>
+          <label className="lb-toggle">
+            <input
+              type="checkbox"
+              checked={ossOnly}
+              onChange={(e) => setOssOnly(e.target.checked)}
+            />{' '}
+            Show open-source policies only
+          </label>
+        </div>
       </div>
 
-      {visible.length === 0 ? (
+      {board.length > 0 && (
+        <p className="lb-scope-summary">
+          Showing {visible.length.toLocaleString()} of {scopeLabel}.
+        </p>
+      )}
+
+      {board.length === 0 ? (
         <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading…</p>
+      ) : visible.length === 0 ? (
+        <p style={{ textAlign: 'center', marginTop: '2rem' }}>
+          No policies match the selected filters.
+        </p>
       ) : (
         showChart ? (
-          <LeaderboardChart
-            rows={chartRows}
-            showLowEvalPolicies={showLowEvalPolicies}
-            onToggleLowEval={() => setShowLowEvalPolicies((v) => !v)}
-          />
+          <LeaderboardChart rows={chartRows} />
         ) : (
           <div className="lb-table-wrap">
             <table className="lb-table">
@@ -210,7 +245,7 @@ function PolicyStatusIndicators({ row }) {
   );
 }
 
-function LeaderboardChart({ rows, showLowEvalPolicies, onToggleLowEval }) {
+function LeaderboardChart({ rows }) {
   const [tooltip, setTooltip] = useState(null);
 
   const width = 1000;
@@ -432,17 +467,6 @@ function LeaderboardChart({ rows, showLowEvalPolicies, onToggleLowEval }) {
         </div>
       )}
 
-      <div className="lb-chart-footnote-wrap">
-        <button
-          className="lb-chart-footnote"
-          type="button"
-          onClick={onToggleLowEval}
-        >
-          {showLowEvalPolicies
-            ? 'Showing policies with < 100 evals. Click to hide.'
-            : 'Policies with < 100 evals not shown. Click to show.'}
-        </button>
-      </div>
     </div>
   );
 }
