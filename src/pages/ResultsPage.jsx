@@ -1,10 +1,15 @@
-import { useEffect, useMemo, useState, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import EvaluationCard from '../components/EvaluationCard.jsx'
 import TransparencyDashboard from '../components/TransparencyDashboard.jsx'
 import '../css/theme.css'
 import './results.css'
 import { apiGetJson } from '../api';
-import { buildTransparencyStats, isRankingIncludedEvaluation } from '../utils/transparencyStats';
+import {
+  buildTransparencyStatsFromSummary,
+  isRankingIncludedEvaluation,
+} from '../utils/transparencyStats';
+
+const RESULTS_PAGE_SIZE = 20;
 
 export default function ResultsPage() {
   const initialQuery = (() => {
@@ -18,104 +23,101 @@ export default function ResultsPage() {
   /* ------------------------------------------------------------------ */
   /* state                                                               */
   /* ------------------------------------------------------------------ */
-  const [allEvals, setAllEvals] = useState([])
+  const [visibleEvals, setVisibleEvals] = useState([])
+  const [totalCount, setTotalCount] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
+  const [isLoadingPage, setIsLoadingPage] = useState(false)
+  const [pageError, setPageError] = useState(null)
+  const [transparencySummary, setTransparencySummary] = useState(null)
   const [requestStats, setRequestStats] = useState(null)
-  const [shown, setShown] = useState(10)
   const [query, setQuery] = useState(initialQuery)
   const [shareStatus, setShareStatus] = useState('idle')
   const loaderRef = useRef(null)
+  const requestSeqRef = useRef(0)
 
   /* ------------------------------------------------------------------ */
   /* data fetch helper                                                   */
   /* ------------------------------------------------------------------ */
-  const fetchData = () => {
-    apiGetJson('/list_ab_evaluations')
-      .then((d) => setAllEvals(d.evaluations))
-      .catch(console.error)
+  const fetchPage = useCallback(({ offset = 0, replace = false, searchQuery = query } = {}) => {
+    const requestSeq = requestSeqRef.current + 1
+    requestSeqRef.current = requestSeq
+    setIsLoadingPage(true)
+    setPageError(null)
+
+    const params = new URLSearchParams({
+      limit: String(RESULTS_PAGE_SIZE),
+      offset: String(offset),
+    })
+    const trimmed = searchQuery.trim()
+    if (trimmed) params.set('q', trimmed)
+
+    apiGetJson(`/list_ab_evaluations?${params.toString()}`)
+      .then((d) => {
+        if (requestSeq !== requestSeqRef.current) return
+        setVisibleEvals((prev) =>
+          replace ? d.evaluations : [...prev, ...d.evaluations]
+        )
+        setTotalCount(d.total ?? d.evaluations.length)
+        setHasMore(Boolean(d.has_more ?? d.hasMore))
+      })
+      .catch((error) => {
+        if (requestSeq !== requestSeqRef.current) return
+        console.error(error)
+        setPageError('Could not load A/B evaluations.')
+      })
+      .finally(() => {
+        if (requestSeq === requestSeqRef.current) {
+          setIsLoadingPage(false)
+        }
+      })
+  }, [query])
+
+  const fetchStats = useCallback(() => {
+    apiGetJson('/transparency_summary')
+      .then((d) => setTransparencySummary(d))
+      .catch(() => setTransparencySummary(null))
 
     apiGetJson('/evaluator_request_stats')
       .then((d) => setRequestStats(d))
       .catch(() => setRequestStats(null))
-  }
+  }, [])
 
   /* run once on mount */
   useEffect(() => {
-      fetchData();          // call it, ignore the returned Promise
-    }, [])    
+    fetchStats()
+  }, [fetchStats])
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setVisibleEvals([])
+      setTotalCount(0)
+      setHasMore(false)
+      fetchPage({ offset: 0, replace: true, searchQuery: query })
+    }, 250)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [fetchPage, query])
 
   /* ------------------------------------------------------------------ */
   /* infinite-scroll sentinel                                            */
   /* ------------------------------------------------------------------ */
   useEffect(() => {
     const io = new IntersectionObserver(
-      ([entry]) => entry.isIntersecting && setShown((c) => c + 10),
+      ([entry]) => {
+        if (entry.isIntersecting && hasMore && !isLoadingPage) {
+          fetchPage({ offset: visibleEvals.length, replace: false, searchQuery: query })
+        }
+      },
       { threshold: 1 }
     )
     if (loaderRef.current) io.observe(loaderRef.current)
     return () => io.disconnect()
-  }, [])
-
-  /* ------------------------------------------------------------------ */
-  /* search / filter                                                     */
-  /* ------------------------------------------------------------------ */
-  const tokens = query
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(Boolean)
-
-  const sessionTokens = tokens
-    .filter((t) => t.startsWith('sid:') || t.startsWith('session:'))
-    .map((t) => t.split(':').slice(1).join(':').trim())
-    .filter(Boolean)
-
-  /* special “tie” keyword → show only ties */
-  const wantTieOnly = tokens.some((t) => ['tie', 'ties', 'tie:'].includes(t))
-  const tokensWithoutTie = tokens.filter(
-    (t) => !['tie', 'ties', 'tie:'].includes(t)
-  )
-  const genericTokens = tokensWithoutTie.filter(
-    (t) => !t.startsWith('sid:') && !t.startsWith('session:')
-  )
-
-  const filtered = allEvals.filter((e) => {
-    if (wantTieOnly && (e.preference ?? '').toUpperCase() !== 'TIE') return false
-    if (
-      sessionTokens.length > 0 &&
-      !sessionTokens.every((needle) =>
-        (e.session_id ?? '').toLowerCase().includes(needle)
-      )
-    ) return false
-
-    /* logical AND across all remaining tokens */
-    return genericTokens.every((tok) =>
-      [
-        e.university,
-        e.evaluator_name ?? '',
-        e.policyA.name,
-        e.policyB.name,
-        e.session_id ?? '',
-        new Date(e.completion_time).toLocaleString(),
-      ]
-        .map((s) => s.toLowerCase())
-        .some((field) => field.includes(tok))
-    )
-  })
+  }, [fetchPage, hasMore, isLoadingPage, query, visibleEvals.length])
 
   const transparencyStats = useMemo(
-    () => buildTransparencyStats(allEvals, requestStats),
-    [allEvals, requestStats]
+    () => buildTransparencyStatsFromSummary(transparencySummary, requestStats),
+    [transparencySummary, requestStats]
   )
-  const filteredTransparencyCount = useMemo(
-    () => filtered.filter(isRankingIncludedEvaluation).length,
-    [filtered]
-  )
-
-  /* newest-first order */
-  const sorted = [...filtered].sort(
-    (a, b) => new Date(b.completion_time) - new Date(a.completion_time)
-  )
-
-  const visible = sorted.slice(0, shown)
 
   const copyToClipboard = async (text) => {
     if (!text) return false;
@@ -158,6 +160,16 @@ export default function ResultsPage() {
     window.setTimeout(() => setShareStatus('idle'), 1800);
   };
 
+  const downloadAllCountedEvals = async () => {
+    const d = await apiGetJson('/list_ab_evaluations')
+    const countedEvaluations = (d.evaluations || []).filter(isRankingIncludedEvaluation)
+    return {
+      generated_at: new Date().toISOString(),
+      count: countedEvaluations.length,
+      evaluations: countedEvaluations,
+    }
+  }
+
   /* ------------------------------------------------------------------ */
   /* render                                                              */
   /* ------------------------------------------------------------------ */
@@ -166,16 +178,16 @@ export default function ResultsPage() {
       <h2 style={{ marginBottom: '1rem', textAlign: 'center'}}>A/B Evaluation Viewer</h2>
 
       <TransparencyDashboard
-        evaluations={allEvals}
         stats={transparencyStats}
-        filteredCount={filteredTransparencyCount}
+        filteredCount={totalCount}
         query={query}
+        onDownloadEvals={downloadAllCountedEvals}
       />
 
       <div className="results-browser-divider" aria-label="A/B evaluation browser">
         <span>A/B Evaluation Browser</span>
         <strong>
-          {filtered.length.toLocaleString()} record{filtered.length === 1 ? '' : 's'} shown
+          {visibleEvals.length.toLocaleString()} of {totalCount.toLocaleString()} record{totalCount === 1 ? '' : 's'} loaded
         </strong>
       </div>
 
@@ -209,8 +221,8 @@ export default function ResultsPage() {
           title="Clear filters and reload"
           onClick={() => {
             setQuery('');
-            setShown(10);
-            fetchData();
+            fetchStats();
+            fetchPage({ offset: 0, replace: true, searchQuery: '' });
           }}
         >
           Reset
@@ -248,19 +260,26 @@ export default function ResultsPage() {
             borderRadius: '4px',
           }}
           title="Refresh list"
-          onClick={() => fetchData()}
+          onClick={() => {
+            fetchStats();
+            fetchPage({ offset: 0, replace: true, searchQuery: query });
+          }}
         >
           ⟳
         </button>
       </div>
 
-      {allEvals.length === 0 && (
+      {pageError && (
+        <p style={{ textAlign: 'center', color: '#9b1c1c' }}>{pageError}</p>
+      )}
+
+      {visibleEvals.length === 0 && isLoadingPage && (
         <div style={{ textAlign: 'center', marginTop: '2rem' }}>
           <span className="loader" /> {/* or just “Loading…” */}
         </div>
       )}
 
-      {visible.map((ev) => (
+      {visibleEvals.map((ev) => (
         <EvaluationCard
           key={ev.session_id}
           evalData={ev}
@@ -269,7 +288,9 @@ export default function ResultsPage() {
       ))}
 
       {/* sentinel for IntersectionObserver */}
-      <div ref={loaderRef} style={{ height: 1 }} />
+      <div ref={loaderRef} style={{ minHeight: 24, textAlign: 'center', color: '#5e6572' }}>
+        {isLoadingPage && visibleEvals.length > 0 ? 'Loading more...' : ''}
+      </div>
     </div>
   )
 }

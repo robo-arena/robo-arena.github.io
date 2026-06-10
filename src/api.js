@@ -32,6 +32,20 @@ function normalizeLeaderboardPayload(payload) {
   };
 }
 
+function normalizeLeaderboardHistoryPayload(payload) {
+  if (!payload || !Array.isArray(payload.snapshots)) return payload;
+  return {
+    ...payload,
+    snapshots: payload.snapshots.map((snapshot) => ({
+      ...snapshot,
+      board: (snapshot.board || []).map((row) => ({
+        ...row,
+        policy: renamePolicyForUi(row.policy),
+      })),
+    })),
+  };
+}
+
 function normalizeAbEvaluationsPayload(payload) {
   if (!payload || !Array.isArray(payload.evaluations)) return payload;
   return {
@@ -47,6 +61,54 @@ function normalizeAbEvaluationsPayload(payload) {
         name: renamePolicyForUi(evaluation.policyB?.name),
       },
     })),
+  };
+}
+
+function normalizeTransparencySummaryPayload(payload) {
+  const summary = payload?.summary;
+  if (!summary) return payload;
+
+  const normalizePolicyStats = (policy) => ({
+    ...policy,
+    policy: renamePolicyForUi(policy.policy),
+    opponents: (policy.opponents || []).map((opponent) => ({
+      ...opponent,
+      policy: renamePolicyForUi(opponent.policy),
+    })),
+  });
+  const normalizeContributor = (contributor) => ({
+    ...contributor,
+    policies: (contributor.policies || []).map((policy) => ({
+      ...policy,
+      policy: renamePolicyForUi(policy.policy),
+    })),
+    pairs: (contributor.pairs || []).map((pair) => ({
+      ...pair,
+      policy1: renamePolicyForUi(pair.policy1),
+      policy2: renamePolicyForUi(pair.policy2),
+    })),
+    recent_evaluations: (contributor.recent_evaluations || []).map((evaluation) => ({
+      ...evaluation,
+      policyA: renamePolicyForUi(evaluation.policyA),
+      policyB: renamePolicyForUi(evaluation.policyB),
+    })),
+  });
+
+  return {
+    ...payload,
+    summary: {
+      ...summary,
+      policies: (summary.policies || []).map(normalizePolicyStats),
+      evaluator_organizations: (summary.evaluator_organizations || []).map(
+        normalizeContributor
+      ),
+      evaluator_accounts: (summary.evaluator_accounts || []).map(normalizeContributor),
+      pairs: (summary.pairs || []).map((pair) => ({
+        ...pair,
+        policy1: renamePolicyForUi(pair.policy1),
+        policy2: renamePolicyForUi(pair.policy2),
+      })),
+    },
   };
 }
 
@@ -111,7 +173,9 @@ function normalizeLeaderboardImpactPayload(payload) {
 function normalizeApiJson(path, payload) {
   const pathname = path.split('?')[0];
   if (pathname === '/leaderboard') return normalizeLeaderboardPayload(payload);
+  if (pathname === '/leaderboard_history') return normalizeLeaderboardHistoryPayload(payload);
   if (pathname === '/list_ab_evaluations') return normalizeAbEvaluationsPayload(payload);
+  if (pathname === '/transparency_summary') return normalizeTransparencySummaryPayload(payload);
   if (pathname === '/evaluator_leaderboard_impact') {
     return normalizeLeaderboardImpactPayload(payload);
   }

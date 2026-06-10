@@ -4,12 +4,13 @@ import { useLocation }         from "react-router-dom";
 import MainPage   from './components/MainPage.jsx';
 import IntroSplash from './components/IntroSplash.jsx';
 import useAutoScale from './useAutoScale.js';
+import { apiGet } from './api.js';
 
 export default function App() {
   useAutoScale(700);
 
   // 0️⃣  Determine if we're on the home page
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const onHome = pathname === "/";
 
   // 1️⃣  Show splash on initial home-page load (desktop + mobile)
@@ -31,6 +32,28 @@ export default function App() {
   useEffect(() => {
     if (!onHome && showSplash) setShowSplash(false);
   }, [onHome, showSplash]);
+
+  useEffect(() => {
+    const storageKey = 'roboarena_visitor_id';
+    let visitorId = window.localStorage.getItem(storageKey);
+    if (!visitorId) {
+      visitorId = window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`;
+      window.localStorage.setItem(storageKey, visitorId);
+    }
+
+    apiGet('/visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        path: `${pathname}${search}`,
+        referrer: document.referrer || null,
+        visitor_id: visitorId,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language,
+        screen: `${window.screen.width}x${window.screen.height}`,
+      }),
+    }).catch(() => {});
+  }, [pathname, search]);
 
   return (
     <>

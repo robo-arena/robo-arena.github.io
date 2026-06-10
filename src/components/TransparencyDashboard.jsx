@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { HiChevronDown, HiChevronUp, HiOutlineDownload } from 'react-icons/hi';
 import { apiGetJson } from '../api';
-import { downloadJson, isRankingIncludedEvaluation } from '../utils/transparencyStats';
+import { downloadJson } from '../utils/transparencyStats';
 import './transparency.css';
 
 const DATE_FORMAT = new Intl.DateTimeFormat(undefined, {
@@ -387,7 +387,7 @@ function EvaluatorOrgDetails({ org, rankImpact, isRankImpactLoading }) {
   );
 }
 
-export default function TransparencyDashboard({ evaluations, stats, filteredCount, query }) {
+export default function TransparencyDashboard({ stats, filteredCount, query, onDownloadEvals }) {
   const [activeOrgLabel, setActiveOrgLabel] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [orgImpacts, setOrgImpacts] = useState({});
@@ -470,7 +470,6 @@ export default function TransparencyDashboard({ evaluations, stats, filteredCoun
     );
   }
 
-  const countedEvaluations = evaluations.filter(isRankingIncludedEvaluation);
   const summaryPayload = {
     generated_at: stats.generatedAt,
     note: 'Derived from counted public RoboArena A/B evaluations.',
@@ -515,13 +514,11 @@ export default function TransparencyDashboard({ evaluations, stats, filteredCoun
             {isExpanded ? 'Hide Details' : 'Show Details'}
           </button>
           <DownloadButton
-            onClick={() =>
-              downloadJson('roboarena-counted-ab-evaluations.json', {
-                generated_at: new Date().toISOString(),
-                count: countedEvaluations.length,
-                evaluations: countedEvaluations,
-              })
-            }
+            onClick={async () => {
+              if (!onDownloadEvals) return;
+              const payload = await onDownloadEvals();
+              downloadJson('roboarena-counted-ab-evaluations.json', payload);
+            }}
           >
             Evals JSON
           </DownloadButton>

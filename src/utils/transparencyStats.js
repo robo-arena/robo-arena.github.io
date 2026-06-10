@@ -319,6 +319,86 @@ function normalizeRequestStats(requestStats) {
   };
 }
 
+function camelOutcomeItem(item) {
+  return {
+    ...item,
+    winRate: item.win_rate ?? item.winRate ?? null,
+    tieRate: item.tie_rate ?? item.tieRate ?? 0,
+  };
+}
+
+function camelPolicySummary(policy) {
+  return {
+    policy: policy.policy,
+    evals: policy.evals || 0,
+    wins: policy.wins || 0,
+    losses: policy.losses || 0,
+    ties: policy.ties || 0,
+    winRate: policy.win_rate ?? policy.winRate ?? null,
+    tieRate: policy.tie_rate ?? policy.tieRate ?? 0,
+    labCount: policy.lab_count ?? policy.labCount ?? 0,
+    evaluatorCount: policy.evaluator_count ?? policy.evaluatorCount ?? 0,
+    opponentCount: policy.opponent_count ?? policy.opponentCount ?? 0,
+    topLabShare: policy.top_lab_share ?? policy.topLabShare ?? 0,
+    labs: (policy.labs || []).map(camelOutcomeItem),
+    evaluators: policy.evaluators || [],
+    opponents: (policy.opponents || []).map((opponent) => ({
+      ...opponent,
+      winRate: opponent.win_rate ?? opponent.winRate ?? null,
+      tieRate: opponent.tie_rate ?? opponent.tieRate ?? 0,
+    })),
+    recentActivity: policy.recent_activity || policy.recentActivity || [],
+    firstEvalAt: policy.first_eval_at ?? policy.firstEvalAt ?? null,
+    lastEvalAt: policy.last_eval_at ?? policy.lastEvalAt ?? null,
+  };
+}
+
+function camelContributorSummary(contributor) {
+  return {
+    label: contributor.label,
+    count: contributor.count || 0,
+    policyCount: contributor.policy_count ?? contributor.policyCount ?? 0,
+    pairCount: contributor.pair_count ?? contributor.pairCount ?? 0,
+    evaluatorCount: contributor.evaluator_count ?? contributor.evaluatorCount ?? 0,
+    tieRate: contributor.tie_rate ?? contributor.tieRate ?? 0,
+    policies: contributor.policies || [],
+    pairs: (contributor.pairs || []).map((pair) => ({
+      ...pair,
+      tieRate: pair.tie_rate ?? pair.tieRate ?? 0,
+    })),
+    recentActivity: contributor.recent_activity || contributor.recentActivity || [],
+    recentEvaluations: (contributor.recent_evaluations || contributor.recentEvaluations || [])
+      .map((evaluation) => ({
+        sessionId: evaluation.session_id ?? evaluation.sessionId,
+        completionTime: evaluation.completion_time ?? evaluation.completionTime,
+        evaluator: evaluation.evaluator,
+        preference: evaluation.preference,
+        policyA: evaluation.policyA,
+        policyB: evaluation.policyB,
+        languageInstruction: evaluation.language_instruction ?? evaluation.languageInstruction,
+      })),
+    firstEvalAt: contributor.first_eval_at ?? contributor.firstEvalAt ?? null,
+    lastEvalAt: contributor.last_eval_at ?? contributor.lastEvalAt ?? null,
+    requestStats: contributor.requestStats || null,
+  };
+}
+
+function camelPairSummary(pair) {
+  return {
+    policy1: pair.policy1,
+    policy2: pair.policy2,
+    count: pair.count || 0,
+    policy1Wins: pair.policy1_wins ?? pair.policy1Wins ?? 0,
+    policy2Wins: pair.policy2_wins ?? pair.policy2Wins ?? 0,
+    ties: pair.ties || 0,
+    labCount: pair.lab_count ?? pair.labCount ?? 0,
+    evaluatorCount: pair.evaluator_count ?? pair.evaluatorCount ?? 0,
+    tieRate: pair.tie_rate ?? pair.tieRate ?? 0,
+    firstEvalAt: pair.first_eval_at ?? pair.firstEvalAt ?? null,
+    lastEvalAt: pair.last_eval_at ?? pair.lastEvalAt ?? null,
+  };
+}
+
 function buildIntegritySignals({
   totalEvals,
   policies,
@@ -553,6 +633,82 @@ export function buildTransparencyStats(evaluations = [], requestStatsPayload = n
     firstEvalAt: isoOrNull(firstTimeMs),
     lastEvalAt: isoOrNull(lastTimeMs),
     recentActivity: recentMonthBuckets(globalMonths, lastTimeMs),
+    integritySignals: buildIntegritySignals({
+      totalEvals,
+      policies: policyList,
+      evaluatorOrganizations: orgsWithAuditStats,
+      pairs: pairList,
+      requestStats,
+    }),
+    requestStats,
+    policies: policyList,
+    policyByName,
+    evaluatorOrganizations: orgsWithAuditStats,
+    evaluatorAccounts: evaluatorAccountList,
+    pairs: pairList,
+  };
+}
+
+export function buildTransparencyStatsFromSummary(summaryPayload, requestStatsPayload = null) {
+  const summary = summaryPayload?.summary || summaryPayload;
+  if (!summary) return null;
+
+  const policyList = (summary.policies || []).map(camelPolicySummary);
+  const policyByName = Object.fromEntries(policyList.map((policy) => [policy.policy, policy]));
+  const evaluatorOrganizationList = (summary.evaluator_organizations || [])
+    .map(camelContributorSummary);
+  const evaluatorAccountList = (summary.evaluator_accounts || [])
+    .map(camelContributorSummary);
+  const pairList = (summary.pairs || []).map(camelPairSummary);
+  const requestStats = normalizeRequestStats(requestStatsPayload);
+  const knownOrgLabels = new Set(evaluatorOrganizationList.map((org) => org.label));
+  const requestOnlyOrgs = Object.values(requestStats.byOrg)
+    .filter((org) => !knownOrgLabels.has(org.label))
+    .map((org) => ({
+      label: org.label,
+      count: 0,
+      policyCount: 0,
+      pairCount: 0,
+      evaluatorCount: 0,
+      tieRate: 0,
+      policies: [],
+      pairs: [],
+      recentActivity: [],
+      recentEvaluations: [],
+      firstEvalAt: null,
+      lastEvalAt: null,
+    }));
+  const orgsWithAuditStats = [...evaluatorOrganizationList, ...requestOnlyOrgs]
+    .map((org) => ({
+      ...org,
+      requestStats: requestStats.byOrg[org.label] || null,
+    }))
+    .sort((a, b) => {
+      const aRequested = a.requestStats?.requested || 0;
+      const bRequested = b.requestStats?.requested || 0;
+      return b.count - a.count || bRequested - aRequested || a.label.localeCompare(b.label);
+    });
+
+  const totalEvals = summary.total_evals ?? summary.totalEvals ?? 0;
+
+  return {
+    generatedAt: summary.generated_at ?? summary.generatedAt ?? new Date().toISOString(),
+    totalEvals,
+    tieCount: summary.tie_count ?? summary.tieCount ?? 0,
+    tieRate: summary.tie_rate ?? summary.tieRate ?? 0,
+    policyCount: summary.policy_count ?? summary.policyCount ?? policyList.length,
+    pairCount: summary.pair_count ?? summary.pairCount ?? pairList.length,
+    evaluatorOrganizationCount:
+      summary.evaluator_organization_count ??
+      summary.evaluatorOrganizationCount ??
+      evaluatorOrganizationList.length,
+    evaluatorAccountCount:
+      summary.evaluator_account_count ??
+      summary.evaluatorAccountCount ??
+      evaluatorAccountList.length,
+    firstEvalAt: summary.first_eval_at ?? summary.firstEvalAt ?? null,
+    lastEvalAt: summary.last_eval_at ?? summary.lastEvalAt ?? null,
+    recentActivity: summary.recent_activity || summary.recentActivity || [],
     integritySignals: buildIntegritySignals({
       totalEvals,
       policies: policyList,

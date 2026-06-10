@@ -13,6 +13,7 @@ import Leaderboard from '../pages/Leaderboard.jsx';
 import SubmitPolicy from '../pages/SubmitPolicy.jsx';
 import JoinEvaluator from '../pages/JoinEvaluator.jsx';
 import Challenge from '../pages/Challenge.jsx';
+import AdminMetrics from '../pages/AdminMetrics.jsx';
 
 export default function MainPage() {
   return (
@@ -86,6 +87,7 @@ export default function MainPage() {
         <Route path="/submit" element={<SubmitPolicy />} />
         <Route path="/volunteer" element={<JoinEvaluator />} />
         <Route path="/challenge" element={<Challenge />} />
+        <Route path="/admin/metrics" element={<AdminMetrics />} />
       </Routes>
     </>
   );
