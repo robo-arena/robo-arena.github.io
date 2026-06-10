@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import '../css/theme.css';
 import './leaderboard.css';          // 💡 add a page-specific stylesheet
 import PolicyAnalysisReport from '../components/PolicyAnalysisReport.jsx';
+import PolicyInsightPanel from '../components/PolicyInsightPanel.jsx';
 import { apiGetJson } from '../api';
 import arxivLogo from '../assets/arxiv-logo.png';
 import { HiOutlineClock } from 'react-icons/hi';
+import { buildTransparencyStats } from '../utils/transparencyStats';
 
 const POLICY_ARXIV_LINKS = {
   DreamZero: 'https://arxiv.org/abs/2602.15922',
@@ -21,6 +23,7 @@ export default function Leaderboard() {
   const [ossOnly, setOssOnly] = useState(false);
   const [showChart, setShowChart] = useState(false);
   const [leaderboardScope, setLeaderboardScope] = useState('main');
+  const [transparencyEvals, setTransparencyEvals] = useState([]);
 
   useEffect(() => {
     apiGetJson('/leaderboard')
@@ -31,9 +34,19 @@ export default function Leaderboard() {
       .catch(console.error);
   }, []);
 
+  useEffect(() => {
+    apiGetJson('/list_ab_evaluations')
+      .then((d) => setTransparencyEvals(d.evaluations || []))
+      .catch(console.error);
+  }, []);
+
   const mainRows = useMemo(
     () => board.filter((row) => (Number(row.num_evals) || 0) >= MAIN_LEADERBOARD_MIN_EVALS),
     [board]
+  );
+  const transparencyStats = useMemo(
+    () => (transparencyEvals.length > 0 ? buildTransparencyStats(transparencyEvals) : null),
+    [transparencyEvals]
   );
   const scopedRows = leaderboardScope === 'all' ? board : mainRows;
   const visible = ossOnly ? scopedRows.filter((r) => r.open_source) : scopedRows;
@@ -133,36 +146,49 @@ export default function Leaderboard() {
               </thead>
               <tbody>
                 {visible.map((r, idx) => (          /* ← use filtered list */
-                  <tr key={r.policy}>
-                    <td className="left">{idx + 1}</td>
-                    <td>
-                      <div className="lb-policy-cell">
-                        <span className="lb-policy-name">{r.policy}</span>
-                        {POLICY_ARXIV_LINKS[r.policy] && (
-                          <a
-                            className="lb-arxiv-link"
-                            href={POLICY_ARXIV_LINKS[r.policy]}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title={`Open ${r.policy} paper on arXiv`}
-                            aria-label={`Open ${r.policy} paper on arXiv`}
-                          >
-                            <img src={arxivLogo} alt="arXiv paper" className="lb-arxiv-icon" />
-                          </a>
-                        )}
-                      </div>
-                    </td>
-                    <td className="lb-status-cell">
-                      <PolicyStatusIndicators row={r} />
-                    </td>
-                    <td className="right">{r.score}</td>
-                    <td className="right">{r.std}</td>
-                    <td className="right">
-                      {typeof r.num_evals === 'number' ? r.num_evals.toLocaleString() : '—'}
-                    </td>
-                    {/* centre the ✔ without drifting left ↓ */}
-                    <td className="oss-cell">{r.open_source ? '✔️' : ''}</td>
-                  </tr>
+                  <Fragment key={r.policy}>
+                    <tr
+                      className={`lb-data-row ${idx % 2 === 1 ? 'lb-data-row-even' : ''}`}
+                      tabIndex={0}
+                    >
+                      <td className="left">{idx + 1}</td>
+                      <td>
+                        <div className="lb-policy-cell">
+                          <span className="lb-policy-name">{r.policy}</span>
+                          {POLICY_ARXIV_LINKS[r.policy] && (
+                            <a
+                              className="lb-arxiv-link"
+                              href={POLICY_ARXIV_LINKS[r.policy]}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={`Open ${r.policy} paper on arXiv`}
+                              aria-label={`Open ${r.policy} paper on arXiv`}
+                            >
+                              <img src={arxivLogo} alt="arXiv paper" className="lb-arxiv-icon" />
+                            </a>
+                          )}
+                        </div>
+                      </td>
+                      <td className="lb-status-cell">
+                        <PolicyStatusIndicators row={r} />
+                      </td>
+                      <td className="right">{r.score}</td>
+                      <td className="right">{r.std}</td>
+                      <td className="right">
+                        {typeof r.num_evals === 'number' ? r.num_evals.toLocaleString() : '—'}
+                      </td>
+                      {/* centre the ✔ without drifting left ↓ */}
+                      <td className="oss-cell">{r.open_source ? '✔️' : ''}</td>
+                    </tr>
+                    <tr className="lb-insight-row">
+                      <td colSpan={7}>
+                        <PolicyInsightPanel
+                          policyStats={transparencyStats?.policyByName?.[r.policy]}
+                          row={r}
+                        />
+                      </td>
+                    </tr>
+                  </Fragment>
                 ))}
               </tbody>
             </table>

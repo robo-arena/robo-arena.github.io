@@ -1,7 +1,9 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import EvaluationCard from '../components/EvaluationCard.jsx'
+import TransparencyDashboard from '../components/TransparencyDashboard.jsx'
 import '../css/theme.css'
 import { apiGetJson } from '../api';
+import { buildTransparencyStats, isRankingIncludedEvaluation } from '../utils/transparencyStats';
 
 export default function ResultsPage() {
   const initialQuery = (() => {
@@ -92,6 +94,15 @@ export default function ResultsPage() {
     )
   })
 
+  const transparencyStats = useMemo(
+    () => buildTransparencyStats(allEvals),
+    [allEvals]
+  )
+  const filteredTransparencyCount = useMemo(
+    () => filtered.filter(isRankingIncludedEvaluation).length,
+    [filtered]
+  )
+
   /* newest-first order */
   const sorted = [...filtered].sort(
     (a, b) => new Date(b.completion_time) - new Date(a.completion_time)
@@ -146,6 +157,13 @@ export default function ResultsPage() {
   return (
     <div style={{ maxWidth: 1000, margin: '2rem auto', padding: '0 1rem' }}>
       <h2 style={{ marginBottom: '1rem', textAlign: 'center'}}>A/B Evaluation Viewer</h2>
+
+      <TransparencyDashboard
+        evaluations={allEvals}
+        stats={transparencyStats}
+        filteredCount={filteredTransparencyCount}
+        query={query}
+      />
 
       {/* search bar + reset / refresh */}
       <div

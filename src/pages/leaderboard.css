@@ -42,8 +42,39 @@
 /* keep as-is per your note */
 .lb-table .right  { text-align: right;  padding-right: 10x;} /* 10x is a typo technically, but it looks fine so whatever */
 
-.lb-table tbody tr:nth-child(even) { background: #fafafa; }
-.lb-table tbody tr:hover           { background: #fff3e6; }
+.lb-table tbody .lb-data-row-even { background: #fafafa; }
+.lb-table tbody .lb-data-row:hover,
+.lb-table tbody .lb-data-row:focus {
+  background: #fff3e6;
+  outline: none;
+}
+
+.lb-table tbody .lb-data-row:focus-visible td {
+  box-shadow: inset 0 0 0 2px rgba(245, 151, 73, 0.34);
+}
+
+.lb-insight-row {
+  display: none;
+}
+
+.lb-data-row:hover + .lb-insight-row,
+.lb-data-row:focus + .lb-insight-row,
+.lb-data-row:focus-within + .lb-insight-row,
+.lb-insight-row:hover,
+.lb-insight-row:focus-within {
+  display: table-row;
+}
+
+.lb-insight-row td {
+  padding: 0.25rem 0.85rem 0.9rem;
+  background: rgba(255, 248, 241, 0.58);
+}
+
+.lb-insight-row .policy-insight-box {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
 
 .lb-controls {
   display: flex;
