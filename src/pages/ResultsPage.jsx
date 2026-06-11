@@ -189,9 +189,6 @@ export default function ResultsPage() {
 
       <div className="results-browser-divider" aria-label="A/B evaluation browser">
         <span>A/B Evaluation Browser</span>
-        <strong>
-          {visibleEvals.length.toLocaleString()} of {totalCount.toLocaleString()} record{totalCount === 1 ? '' : 's'} loaded
-        </strong>
       </div>
 
       {/* search bar + reset / refresh */}
