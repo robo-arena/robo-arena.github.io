@@ -7,6 +7,7 @@ import leaderboardImg from '../assets/leaderboard.png';
 import simEvalVideo from '../assets/sim_eval.mp4';
 import discordImg from '../assets/discord.svg';
 import { HiOutlineDatabase } from 'react-icons/hi'
+import { BenchmarkIntegrityLetter } from '../components/BenchmarkIntegrityNotice.jsx'
 import '../css/theme.css'
 import './home.css'               // small local styles
 
@@ -179,6 +180,8 @@ export default function Home() {
           </span>
         </Link>
       </div>
+
+      <BenchmarkIntegrityLetter />
 
       <section className="tldr-wrap">
         <h2 className="tldr-title">TL;DR</h2>

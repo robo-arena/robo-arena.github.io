@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import EvaluationCard from '../components/EvaluationCard.jsx'
 import TransparencyDashboard from '../components/TransparencyDashboard.jsx'
+import { BenchmarkIntegrityCallout } from '../components/BenchmarkIntegrityNotice.jsx'
 import '../css/theme.css'
 import './results.css'
 import { apiGetJson } from '../api';
@@ -176,6 +177,8 @@ export default function ResultsPage() {
   return (
     <div className="results-page-wrap">
       <h2 style={{ marginBottom: '1rem', textAlign: 'center'}}>A/B Evaluation Viewer</h2>
+
+      <BenchmarkIntegrityCallout />
 
       <TransparencyDashboard
         stats={transparencyStats}

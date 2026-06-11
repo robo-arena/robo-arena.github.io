@@ -1,0 +1,112 @@
+.benchmark-integrity-notice {
+  box-sizing: border-box;
+  border: 1px solid rgba(190, 24, 45, 0.24);
+  border-left: 7px solid #c91832;
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 245, 245, 0.98), rgba(255, 232, 234, 0.96)),
+    #fff5f5;
+  box-shadow: 0 8px 24px rgba(117, 21, 34, 0.12);
+  color: #34242a;
+}
+
+.benchmark-integrity-letter {
+  max-width: 920px;
+  margin: 2.35rem auto 2.7rem;
+  padding: 1.35rem 1.55rem 1.2rem;
+  text-align: left;
+}
+
+.benchmark-integrity-kicker {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.7rem;
+  border-radius: 999px;
+  background: #c91832;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  margin-bottom: 0.82rem;
+  padding: 0.34rem 0.68rem;
+  text-transform: uppercase;
+}
+
+.benchmark-integrity-body {
+  display: grid;
+  gap: 0.86rem;
+}
+
+.benchmark-integrity-body p {
+  margin: 0;
+  color: #45363b;
+  font-size: 0.98rem;
+  line-height: 1.64;
+}
+
+.benchmark-integrity-signoff {
+  display: grid;
+  justify-items: end;
+  gap: 0.12rem;
+  margin: 1.1rem 0 0;
+  color: #4a2d34;
+  font-size: 0.98rem;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.benchmark-integrity-signoff strong {
+  font-weight: 800;
+}
+
+.benchmark-integrity-callout {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.28rem 0.5rem;
+  max-width: 1000px;
+  margin: 0.95rem auto 1.9rem;
+  padding: 0.78rem 1rem;
+  font-size: 0.94rem;
+  line-height: 1.45;
+}
+
+.benchmark-integrity-callout strong {
+  color: #9f1239;
+  font-weight: 800;
+}
+
+.benchmark-integrity-callout span {
+  color: #49343a;
+}
+
+.benchmark-integrity-notice a {
+  color: #8f0e24;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.benchmark-integrity-notice a:hover {
+  color: #640817;
+}
+
+@media (max-width: 640px) {
+  .benchmark-integrity-letter {
+    margin: 1.65rem auto 1.9rem;
+    padding: 1rem 1rem 0.95rem;
+  }
+
+  .benchmark-integrity-body p,
+  .benchmark-integrity-signoff {
+    font-size: 0.94rem;
+  }
+
+  .benchmark-integrity-callout {
+    margin: 0.85rem auto 1.45rem;
+    padding: 0.76rem 0.82rem;
+    font-size: 0.9rem;
+  }
+}
