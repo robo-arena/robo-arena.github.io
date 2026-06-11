@@ -46,11 +46,11 @@ export function BenchmarkIntegrityLetter() {
 export function BenchmarkIntegrityCallout() {
   return (
     <section className="benchmark-integrity-notice benchmark-integrity-callout">
-      <strong>RoboArena integrity notice.</strong>
+      <strong>Integrity notice.</strong>
+      {' '}
       <span>
-        RoboArena is enforcing third-party evaluation rules and has retroactively
-        discarded suspicious evals.{' '}
-        <Link to="/#benchmark-integrity-update">Read the full update on the main page.</Link>
+        Evaluation rules and counted evals were updated.{' '}
+        <Link to="/#benchmark-integrity-update">Read the note.</Link>
       </span>
     </section>
   );

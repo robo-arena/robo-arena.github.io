@@ -1,13 +1,11 @@
 .benchmark-integrity-notice {
   box-sizing: border-box;
-  border: 1px solid rgba(190, 24, 45, 0.24);
-  border-left: 7px solid #c91832;
+  border: 1px solid rgba(181, 49, 58, 0.24);
+  border-left: 6px solid #b5313a;
   border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(255, 245, 245, 0.98), rgba(255, 232, 234, 0.96)),
-    #fff5f5;
-  box-shadow: 0 8px 24px rgba(117, 21, 34, 0.12);
-  color: #34242a;
+  background: #fff8f6;
+  box-shadow: 0 8px 24px rgba(87, 27, 35, 0.1);
+  color: #202124;
 }
 
 .benchmark-integrity-letter {
@@ -24,7 +22,7 @@
 
 .benchmark-integrity-body p {
   margin: 0;
-  color: #45363b;
+  color: #202124;
   font-size: 0.98rem;
   line-height: 1.64;
 }
@@ -34,7 +32,7 @@
   justify-items: end;
   gap: 0.12rem;
   margin: 1.1rem 0 0;
-  color: #4a2d34;
+  color: #202124;
   font-size: 0.98rem;
   line-height: 1.35;
   text-align: right;
@@ -50,23 +48,26 @@
   flex-wrap: wrap;
   gap: 0.28rem 0.5rem;
   max-width: 1000px;
-  margin: 0.95rem auto 1.9rem;
-  padding: 0.78rem 1rem;
-  font-size: 0.94rem;
+  margin: 0.85rem auto 1.65rem;
+  padding: 0.58rem 0.82rem;
+  border-left-width: 4px;
+  background: #fffaf8;
+  box-shadow: 0 5px 18px rgba(87, 27, 35, 0.07);
+  font-size: 0.9rem;
   line-height: 1.45;
 }
 
 .benchmark-integrity-callout strong {
-  color: #9f1239;
+  color: #982832;
   font-weight: 800;
 }
 
 .benchmark-integrity-callout span {
-  color: #49343a;
+  color: #292929;
 }
 
 .benchmark-integrity-notice a {
-  color: #8f0e24;
+  color: #982832;
   font-weight: 800;
   text-decoration: underline;
   text-decoration-thickness: 1px;
@@ -74,7 +75,7 @@
 }
 
 .benchmark-integrity-notice a:hover {
-  color: #640817;
+  color: #701b24;
 }
 
 @media (max-width: 640px) {
