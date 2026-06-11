@@ -22,10 +22,10 @@ export function BenchmarkIntegrityLetter() {
           we have retroactively discarded evals from organizations we found to be
           engaging in suspicious activities. Our method for assessing suspicion was
           numerical: there were several means by which A/B evals were rigged, one of
-          which manifested as a very small fraction of requested evals actually being
-          performed. We decided that organizations who contributed evals at a less than
-          20% rate would be flagged. These retroactive changes affect evals beginning
-          from April 2, 2026, before which we deemed all evals to be sound.
+          which manifested as unusually low completion rates for requested evaluation
+          assignments. We decided that organizations completing less than 20% of their
+          requested evals would be flagged. These retroactive changes affect evals
+          beginning from April 2, 2026, before which we deemed all evals to be sound.
         </p>
         <p>
           We want to thank the community for their support; community oversight with
