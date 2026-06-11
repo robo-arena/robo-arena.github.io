@@ -115,10 +115,6 @@ function IntegritySignals({ signals }) {
       <div className="integrity-signal-header">
         <div>
           <h4>Review Signals</h4>
-          <span>
-            These are audit cues for transparency. They do not by themselves imply
-            misconduct; they point to places where counted eval evidence is worth inspecting.
-          </span>
         </div>
       </div>
       <div className="integrity-signal-row" tabIndex={0} aria-label="Integrity signals">
