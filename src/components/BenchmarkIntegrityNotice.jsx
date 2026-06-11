@@ -10,10 +10,13 @@ export function BenchmarkIntegrityLetter() {
     >
       <div className="benchmark-integrity-body">
         <p>
-          Ensuring RoboArena is a fair and trustworthy benchmark is of critical
-          importance to us. At sufficient scale, RoboArena's decentralized design means
-          individual bad actors cannot easily sway the results. However, we are not yet
-          at this scale, and we have observed evidence of benchmark manipulation.
+          <strong>
+            Ensuring RoboArena is a fair and trustworthy benchmark is of critical
+            importance to us.
+          </strong>{' '}
+          At sufficient scale, RoboArena's decentralized design means individual bad
+          actors cannot easily sway the results. However, we are not yet at this scale,
+          and we have observed evidence of benchmark manipulation.
         </p>
         <p>
           <strong>
@@ -34,9 +37,10 @@ export function BenchmarkIntegrityLetter() {
         <p>
           We want to thank the community for their support; community oversight with
           fully public evals was one of our goals, and so we are glad to see this
-          working. To make it easier for the community to audit the benchmark, we have
-          made the acquisition of evaluation data easier and have updated the website with
-          a number of hopefully useful metrics and visualizations.
+          working.{' '}
+          <strong>To make it easier for the community to audit the benchmark</strong>,
+          we have made the acquisition of evaluation data easier and have updated the
+          website with a number of hopefully useful metrics and visualizations.
         </p>
       </div>
       <p className="benchmark-integrity-signoff">
