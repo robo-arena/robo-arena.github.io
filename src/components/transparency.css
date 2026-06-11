@@ -691,15 +691,17 @@
 }
 
 .evaluator-org-panel {
-  border-color: rgba(245, 151, 73, 0.42);
-  background: rgba(255, 255, 255, 0.94);
-  padding: 0.66rem 0.82rem 0.72rem;
+  border-color: rgba(245, 151, 73, 0.68);
+  border-width: 2px;
+  background:
+    linear-gradient(180deg, rgba(242, 250, 249, 0.98), rgba(229, 244, 242, 0.98));
+  padding: 0.62rem 0.78rem 0.68rem;
   box-shadow: 0 5px 18px rgba(20, 39, 59, 0.1);
 }
 
 .evaluator-org-panel.collapsed {
-  padding-top: 0.56rem;
-  padding-bottom: 0.56rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 .evaluator-org-panel.collapsed .evaluator-org-panel-header {
@@ -707,9 +709,25 @@
 }
 
 .evaluator-org-panel.expanded .integrity-signal-strip {
-  border-bottom: 1px solid rgba(119, 144, 151, 0.14);
+  border-bottom: 1px solid rgba(22, 111, 115, 0.18);
   margin-bottom: 0.75rem;
   padding-bottom: 0.58rem;
+}
+
+.evaluator-org-panel .integrity-signal-card,
+.evaluator-org-panel .evaluator-org-detail-rail section {
+  border-color: rgba(22, 111, 115, 0.28);
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.evaluator-org-panel .integrity-signal-card {
+  border-left-color: rgba(15, 84, 88, 0.78);
+}
+
+.evaluator-org-panel .integrity-signal-card:hover,
+.evaluator-org-panel .integrity-signal-card:focus-visible,
+.evaluator-org-panel .evaluator-org-detail-rail section:hover {
+  border-color: rgba(15, 84, 88, 0.42);
 }
 
 .evaluator-org-panel-header {
