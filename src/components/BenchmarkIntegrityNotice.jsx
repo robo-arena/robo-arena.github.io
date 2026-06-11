@@ -6,11 +6,8 @@ export function BenchmarkIntegrityLetter() {
     <section
       id="benchmark-integrity-update"
       className="benchmark-integrity-notice benchmark-integrity-letter"
-      aria-labelledby="benchmark-integrity-title"
+      aria-label="RoboArena benchmark integrity notice"
     >
-      <div id="benchmark-integrity-title" className="benchmark-integrity-kicker">
-        Benchmark Integrity Update
-      </div>
       <div className="benchmark-integrity-body">
         <p>
           Ensuring RoboArena is a fair and trustworthy benchmark is of critical
@@ -49,7 +46,7 @@ export function BenchmarkIntegrityLetter() {
 export function BenchmarkIntegrityCallout() {
   return (
     <section className="benchmark-integrity-notice benchmark-integrity-callout">
-      <strong>Benchmark integrity update.</strong>
+      <strong>RoboArena integrity notice.</strong>
       <span>
         RoboArena is enforcing third-party evaluation rules and has retroactively
         discarded suspicious evals.{' '}

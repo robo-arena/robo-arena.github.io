@@ -74,6 +74,8 @@ export default function Home() {
         </span>
       </h1>
 
+      <BenchmarkIntegrityLetter />
+
       {/* Author line */}
       <p className="author-line">
       {authors.map((a, idx) => {
@@ -180,8 +182,6 @@ export default function Home() {
           </span>
         </Link>
       </div>
-
-      <BenchmarkIntegrityLetter />
 
       <section className="tldr-wrap">
         <h2 className="tldr-title">TL;DR</h2>

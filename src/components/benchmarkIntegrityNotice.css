@@ -11,26 +11,10 @@
 }
 
 .benchmark-integrity-letter {
-  max-width: 920px;
+  max-width: calc(900px + 2.8rem + 6px);
   margin: 2.35rem auto 2.7rem;
   padding: 1.35rem 1.55rem 1.2rem;
   text-align: left;
-}
-
-.benchmark-integrity-kicker {
-  display: inline-flex;
-  align-items: center;
-  min-height: 1.7rem;
-  border-radius: 999px;
-  background: #c91832;
-  color: #ffffff;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  line-height: 1;
-  margin-bottom: 0.82rem;
-  padding: 0.34rem 0.68rem;
-  text-transform: uppercase;
 }
 
 .benchmark-integrity-body {
