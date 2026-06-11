@@ -62,21 +62,10 @@ function IntegritySignals({ signals }) {
 
   const topOrg = signals.largestOrgShare;
   const policyShare = signals.highestPolicyOrgShare;
-  const rejection = signals.largestRejection;
   const thinCoverage = signals.thinOfficialCoverage;
   const pairConcentration = signals.pairConcentration;
 
   const cards = [
-    rejection && {
-      key: 'request-dropoff',
-      label: 'Assignment Drop-Off',
-      value: formatPercent(rejection.rejection_rate),
-      detail: `${rejection.label} · ${rejection.performed.toLocaleString()}/${rejection.requested.toLocaleString()} performed`,
-      explanation:
-        'Shows whether assigned A/B sessions usually turn into submitted preferences. High drop-off is worth reviewing because discarded assignments can bias which comparisons are completed.',
-      tone: toneFromValue(rejection.rejection_rate, 50, 80),
-      title: `Largest request-to-performed drop-off among evaluator orgs with at least ${signals.minimumRequestedForDropoffSignal} requested evals.`,
-    },
     topOrg && {
       key: 'top-org',
       label: 'Evaluator Concentration',
@@ -128,7 +117,7 @@ function IntegritySignals({ signals }) {
           <h4>Review Signals</h4>
           <span>
             These are audit cues for transparency. They do not by themselves imply
-            misconduct; they point to places where concentration or drop-off is worth inspecting.
+            misconduct; they point to places where counted eval evidence is worth inspecting.
           </span>
         </div>
       </div>
@@ -137,33 +126,6 @@ function IntegritySignals({ signals }) {
           <IntegritySignalCard key={key} {...card} />
         ))}
       </div>
-    </div>
-  );
-}
-
-function RequestFunnel({ stats }) {
-  if (!stats) {
-    return <p className="transparency-empty">Request stats unavailable until the server exposes aggregate session counts.</p>;
-  }
-
-  return (
-    <div className="transparency-mini-stats">
-      <span>
-        <strong>{stats.requested.toLocaleString()}</strong>
-        Requested
-      </span>
-      <span>
-        <strong>{stats.performed.toLocaleString()}</strong>
-        Performed
-      </span>
-      <span>
-        <strong>{formatPercent(stats.rejection_rate)}</strong>
-        Drop-off
-      </span>
-      <span>
-        <strong>{stats.counted.toLocaleString()}</strong>
-        Valid
-      </span>
     </div>
   );
 }
@@ -334,7 +296,6 @@ function ActivityBars({ buckets }) {
 function EvaluatorOrgDetails({ org, rankImpact, isRankImpactLoading }) {
   const topPolicies = org.policies;
   const topPairs = org.pairs;
-  const requestStats = org.requestStats;
 
   return (
     <div className="evaluator-org-detail">
@@ -345,19 +306,10 @@ function EvaluatorOrgDetails({ org, rankImpact, isRankImpactLoading }) {
             {org.count.toLocaleString()} counted evals · {org.policyCount} policies · {org.pairCount} pairs
           </span>
         </div>
-        <strong>
-          {requestStats
-            ? `${formatPercent(requestStats.rejection_rate)} drop-off`
-            : `${formatPercent(org.tieRate)} ties`}
-        </strong>
+        <strong>{formatPercent(org.tieRate)} ties</strong>
       </div>
 
       <div className="evaluator-org-detail-rail" tabIndex={0} aria-label={`Statistics for ${org.label}`}>
-        <section>
-          <h5>Request Funnel</h5>
-          <RequestFunnel stats={requestStats} />
-        </section>
-
         <section className="evaluator-org-wide-section">
           <h5>Leave-One-Org Ranking</h5>
           <LeaderboardImpact
@@ -480,6 +432,11 @@ export default function TransparencyDashboard({ stats, filteredCount, query, onD
     );
   }
 
+  const evaluatorOrganizationsForDownload = stats.evaluatorOrganizations.map((org) => {
+    const cleanOrg = { ...org };
+    delete cleanOrg.requestStats;
+    return cleanOrg;
+  });
   const summaryPayload = {
     generated_at: stats.generatedAt,
     note: 'Derived from counted public RoboArena A/B evaluations.',
@@ -492,9 +449,8 @@ export default function TransparencyDashboard({ stats, filteredCount, query, onD
       first_eval_at: stats.firstEvalAt,
       last_eval_at: stats.lastEvalAt,
     },
-    evaluator_organizations: stats.evaluatorOrganizations,
+    evaluator_organizations: evaluatorOrganizationsForDownload,
     integrity_signals: stats.integritySignals,
-    request_stats: stats.requestStats,
     policies: stats.policies,
     pairs: stats.pairs,
   };
@@ -550,7 +506,6 @@ export default function TransparencyDashboard({ stats, filteredCount, query, onD
             <div className="evaluator-org-list" aria-label="Evaluator organizations">
               {orgs.map((org) => {
                 const isActive = org.label === activeOrg?.label;
-                const countLabel = org.requestStats?.requested ?? org.count;
                 return (
                   <button
                     type="button"
@@ -561,7 +516,7 @@ export default function TransparencyDashboard({ stats, filteredCount, query, onD
                     onMouseEnter={() => setActiveOrgLabel(org.label)}
                   >
                     <span title={org.label}>{org.label}</span>
-                    <strong>{countLabel.toLocaleString()}</strong>
+                    <strong>{org.count.toLocaleString()}</strong>
                   </button>
                 );
               })}

@@ -16,12 +16,15 @@ export function BenchmarkIntegrityLetter() {
           at this scale, and we have observed evidence of benchmark manipulation.
         </p>
         <p>
-          To ensure integrity of the benchmark, we are now enforcing that only
-          third-party evaluators who have no stake through submitted policies can
-          volunteer evals. Alongside this change, which we implemented retroactively,
-          we have excluded evals from organizations with suspicious evaluation
-          patterns. Our method for assessing suspicion was numerical: there were
-          several means by which A/B evals were manipulated, one of
+          <strong>
+            To ensure integrity of the benchmark, we are now enforcing that only
+            third-party evaluators who have no stake through submitted policies can
+            volunteer evals. Alongside this change, which we implemented retroactively,
+            we have excluded evals from organizations with suspicious evaluation
+            patterns.
+          </strong>{' '}
+          Our method for assessing suspicion was numerical: there were several means by
+          which A/B evals were manipulated, one of
           which manifested as unusually low completion rates for requested evaluation
           assignments. We decided that organizations completing less than 20% of their
           requested evals would be flagged. These retroactive changes affect evals

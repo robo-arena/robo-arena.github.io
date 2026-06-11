@@ -30,7 +30,6 @@ export default function ResultsPage() {
   const [isLoadingPage, setIsLoadingPage] = useState(false)
   const [pageError, setPageError] = useState(null)
   const [transparencySummary, setTransparencySummary] = useState(null)
-  const [requestStats, setRequestStats] = useState(null)
   const [query, setQuery] = useState(initialQuery)
   const [shareStatus, setShareStatus] = useState('idle')
   const loaderRef = useRef(null)
@@ -77,10 +76,6 @@ export default function ResultsPage() {
     apiGetJson('/transparency_summary')
       .then((d) => setTransparencySummary(d))
       .catch(() => setTransparencySummary(null))
-
-    apiGetJson('/evaluator_request_stats')
-      .then((d) => setRequestStats(d))
-      .catch(() => setRequestStats(null))
   }, [])
 
   /* run once on mount */
@@ -116,8 +111,8 @@ export default function ResultsPage() {
   }, [fetchPage, hasMore, isLoadingPage, query, visibleEvals.length])
 
   const transparencyStats = useMemo(
-    () => buildTransparencyStatsFromSummary(transparencySummary, requestStats),
-    [transparencySummary, requestStats]
+    () => buildTransparencyStatsFromSummary(transparencySummary),
+    [transparencySummary]
   )
 
   const copyToClipboard = async (text) => {
