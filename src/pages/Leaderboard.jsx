@@ -150,51 +150,71 @@ export default function Leaderboard() {
                 </tr>
               </thead>
               <tbody>
-                {visible.map((r, idx) => (          /* ← use filtered list */
-                  <Fragment key={r.policy}>
-                    <tr
-                      className={`lb-data-row ${idx % 2 === 1 ? 'lb-data-row-even' : ''}`}
-                      tabIndex={0}
-                    >
-                      <td className="left">{idx + 1}</td>
-                      <td>
-                        <div className="lb-policy-cell">
-                          <span className="lb-policy-name">{r.policy}</span>
-                          {POLICY_ARXIV_LINKS[r.policy] && (
-                            <a
-                              className="lb-arxiv-link"
-                              href={POLICY_ARXIV_LINKS[r.policy]}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title={`Open ${r.policy} paper on arXiv`}
-                              aria-label={`Open ${r.policy} paper on arXiv`}
-                            >
-                              <img src={arxivLogo} alt="arXiv paper" className="lb-arxiv-icon" />
-                            </a>
-                          )}
-                        </div>
-                      </td>
-                      <td className="lb-status-cell">
-                        <PolicyStatusIndicators row={r} />
-                      </td>
-                      <td className="right">{r.score}</td>
-                      <td className="right">{r.std}</td>
-                      <td className="right">
-                        {typeof r.num_evals === 'number' ? r.num_evals.toLocaleString() : '—'}
-                      </td>
-                      {/* centre the ✔ without drifting left ↓ */}
-                      <td className="oss-cell">{r.open_source ? '✔️' : ''}</td>
-                    </tr>
-                    <tr className="lb-insight-row">
-                      <td colSpan={7}>
-                        <PolicyInsightPanel
-                          policyStats={transparencyStats?.policyByName?.[r.policy]}
-                          row={r}
-                        />
-                      </td>
-                    </tr>
-                  </Fragment>
-                ))}
+                {visible.map((r, idx) => {          /* ← use filtered list */
+                  const numEvals = typeof r.num_evals === 'number' ? r.num_evals : null;
+                  const isLowSample =
+                    leaderboardScope === 'all' &&
+                    (numEvals ?? 0) < MAIN_LEADERBOARD_MIN_EVALS;
+                  return (
+                    <Fragment key={r.policy}>
+                      <tr
+                        className={[
+                          'lb-data-row',
+                          idx % 2 === 1 ? 'lb-data-row-even' : '',
+                          isLowSample ? 'lb-data-row-low-sample' : '',
+                        ].filter(Boolean).join(' ')}
+                        tabIndex={0}
+                      >
+                        <td className="left">{idx + 1}</td>
+                        <td>
+                          <div className="lb-policy-cell">
+                            <span className="lb-policy-name">{r.policy}</span>
+                            {POLICY_ARXIV_LINKS[r.policy] && (
+                              <a
+                                className="lb-arxiv-link"
+                                href={POLICY_ARXIV_LINKS[r.policy]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={`Open ${r.policy} paper on arXiv`}
+                                aria-label={`Open ${r.policy} paper on arXiv`}
+                              >
+                                <img src={arxivLogo} alt="arXiv paper" className="lb-arxiv-icon" />
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                        <td className="lb-status-cell">
+                          <PolicyStatusIndicators row={r} />
+                        </td>
+                        <td className="right">{r.score}</td>
+                        <td className="right">{r.std}</td>
+                        <td className="right">
+                          <span className="lb-eval-count">
+                            {numEvals !== null ? numEvals.toLocaleString() : '—'}
+                            {isLowSample && (
+                              <span
+                                className="lb-low-sample-badge"
+                                title={`${MAIN_LEADERBOARD_MIN_EVALS}+ A/B evals per policy are required for the official leaderboard.`}
+                              >
+                                low sample
+                              </span>
+                            )}
+                          </span>
+                        </td>
+                        {/* centre the ✔ without drifting left ↓ */}
+                        <td className="oss-cell">{r.open_source ? '✔️' : ''}</td>
+                      </tr>
+                      <tr className={`lb-insight-row ${isLowSample ? 'lb-insight-row-low-sample' : ''}`}>
+                        <td colSpan={7}>
+                          <PolicyInsightPanel
+                            policyStats={transparencyStats?.policyByName?.[r.policy]}
+                            row={r}
+                          />
+                        </td>
+                      </tr>
+                    </Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>
