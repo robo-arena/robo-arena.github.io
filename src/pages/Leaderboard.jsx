@@ -161,7 +161,6 @@ export default function Leaderboard() {
                         className={[
                           'lb-data-row',
                           idx % 2 === 1 ? 'lb-data-row-even' : '',
-                          isLowSample ? 'lb-data-row-low-sample' : '',
                         ].filter(Boolean).join(' ')}
                         tabIndex={0}
                       >
@@ -204,7 +203,7 @@ export default function Leaderboard() {
                         {/* centre the ✔ without drifting left ↓ */}
                         <td className="oss-cell">{r.open_source ? '✔️' : ''}</td>
                       </tr>
-                      <tr className={`lb-insight-row ${isLowSample ? 'lb-insight-row-low-sample' : ''}`}>
+                      <tr className="lb-insight-row">
                         <td colSpan={7}>
                           <PolicyInsightPanel
                             policyStats={transparencyStats?.policyByName?.[r.policy]}
