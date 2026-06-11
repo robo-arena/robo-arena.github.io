@@ -48,7 +48,7 @@ export function BenchmarkIntegrityCallout() {
   return (
     <section className="benchmark-integrity-notice benchmark-integrity-callout">
       <span>
-        We have made an update to RoboArena to improve benchmark integrity:{' '}
+        We have made an update to RoboArena to improve its benchmark integrity:{' '}
         <Link to="/#benchmark-integrity-update">read the note.</Link>
       </span>
     </section>
