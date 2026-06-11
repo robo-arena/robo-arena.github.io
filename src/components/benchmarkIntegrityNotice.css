@@ -3,9 +3,7 @@
   border: 1px solid rgba(190, 24, 45, 0.24);
   border-left: 7px solid #c91832;
   border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(255, 245, 245, 0.98), rgba(255, 232, 234, 0.96)),
-    #fff5f5;
+  background: #ffe8ea;
   box-shadow: 0 8px 24px rgba(117, 21, 34, 0.12);
   color: #202124;
 }
@@ -53,9 +51,7 @@
   margin: 0.85rem auto 1.65rem;
   padding: 0.58rem 0.82rem;
   border-left-width: 4px;
-  background:
-    linear-gradient(135deg, rgba(255, 245, 245, 0.98), rgba(255, 238, 240, 0.96)),
-    #fff7f7;
+  background: #ffeef0;
   box-shadow: 0 5px 18px rgba(117, 21, 34, 0.08);
   font-size: 0.9rem;
   line-height: 1.45;
