@@ -619,11 +619,11 @@
   overflow-x: auto;
   overflow-y: visible;
   padding: 0.05rem 0 0.08rem;
-  scrollbar-color: rgba(245, 151, 73, 0.6) rgba(245, 151, 73, 0.12);
+  scrollbar-color: rgba(54, 168, 158, 0.55) rgba(119, 144, 151, 0.12);
 }
 
 .integrity-signal-row:focus-visible {
-  outline: 2px solid rgba(245, 151, 73, 0.55);
+  outline: 2px solid rgba(54, 168, 158, 0.45);
   outline-offset: 2px;
 }
 
@@ -643,18 +643,8 @@
 
 .integrity-signal-card:hover,
 .integrity-signal-card:focus-visible {
-  border-color: rgba(245, 151, 73, 0.5);
+  border-color: rgba(54, 168, 158, 0.46);
   outline: none;
-}
-
-.integrity-signal-card.watch {
-  border-left-color: #e1b549;
-  background: rgba(255, 251, 237, 0.9);
-}
-
-.integrity-signal-card.review {
-  border-left-color: #c96b60;
-  background: rgba(255, 246, 243, 0.92);
 }
 
 .integrity-signal-card span {
@@ -728,6 +718,18 @@
   color: #63757d;
   font-size: 0.8rem;
   line-height: 1.35;
+}
+
+.evaluator-org-panel-header .evaluator-overview-summary {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 1.35rem;
+  row-gap: 0.18rem;
+}
+
+.evaluator-org-panel-header .evaluator-overview-summary span {
+  margin-top: 0;
+  white-space: nowrap;
 }
 
 .evaluator-org-layout {

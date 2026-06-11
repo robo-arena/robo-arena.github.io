@@ -26,13 +26,6 @@ function formatScoreDelta(value) {
   return `${value > 0 ? '+' : ''}${value} Elo`;
 }
 
-function toneFromValue(value, watchAt, reviewAt) {
-  if (value === null || value === undefined || Number.isNaN(value)) return 'neutral';
-  if (value >= reviewAt) return 'review';
-  if (value >= watchAt) return 'watch';
-  return 'neutral';
-}
-
 function DownloadButton({ children, onClick }) {
   return (
     <button type="button" className="transparency-download-btn" onClick={onClick}>
@@ -42,10 +35,10 @@ function DownloadButton({ children, onClick }) {
   );
 }
 
-function IntegritySignalCard({ label, value, detail, explanation, tone = 'neutral', title }) {
+function IntegritySignalCard({ label, value, detail, explanation, title }) {
   return (
     <article
-      className={`integrity-signal-card ${tone}`}
+      className="integrity-signal-card"
       tabIndex={0}
       title={title || explanation || detail}
     >
@@ -72,9 +65,8 @@ function IntegritySignals({ signals }) {
       value: formatPercent(topOrg.percent),
       detail: `${topOrg.evaluatorOrg} · ${topOrg.evals.toLocaleString()} evals`,
       explanation:
-        'Shows how much of the counted benchmark evidence came from the single most active evaluator org.',
-      tone: toneFromValue(topOrg.percent, 25, 40),
-      title: 'Largest share of counted A/B evaluations from one evaluator organization.',
+        'Shows how much of the benchmark evidence came from the single most active evaluator org.',
+      title: 'Largest share of A/B evaluations from one evaluator organization.',
     },
     policyShare && {
       key: 'policy-share',
@@ -82,9 +74,8 @@ function IntegritySignals({ signals }) {
       value: formatPercent(policyShare.percent),
       detail: `${policyShare.policy} from ${policyShare.evaluatorOrg}`,
       explanation:
-        'For official policies, this highlights the policy whose evidence depends most heavily on one evaluator org.',
-      tone: toneFromValue(policyShare.percent, 55, 70),
-      title: 'Largest share of one official policy\'s evidence from a single evaluator organization.',
+        'For each official policy, we compute the share of its A/B evals from each evaluator org; this shows the largest such share.',
+      title: 'Largest share of one official policy\'s A/B evals from a single evaluator organization.',
     },
     thinCoverage && {
       key: 'thin-coverage',
@@ -93,7 +84,6 @@ function IntegritySignals({ signals }) {
       detail: `official policies with fewer than 3 evaluator orgs`,
       explanation:
         'Counts official policies whose 100+ A/B evals come from fewer than three evaluator orgs.',
-      tone: thinCoverage.count > 2 ? 'review' : thinCoverage.count > 0 ? 'watch' : 'neutral',
       title: 'Official policies with 100+ A/B evals but fewer than 3 contributing evaluator organizations.',
     },
     pairConcentration && {
@@ -102,9 +92,8 @@ function IntegritySignals({ signals }) {
       value: formatPercent(pairConcentration.percent),
       detail: `${pairConcentration.policy1} vs ${pairConcentration.policy2} · ${pairConcentration.evals.toLocaleString()} evals`,
       explanation:
-        'Shows whether many counted evals are concentrated on one policy matchup instead of being spread across comparisons.',
-      tone: toneFromValue(pairConcentration.percent, 12, 20),
-      title: 'Largest share of counted A/B evaluations from a single policy pair.',
+        'Shows whether many A/B evals are concentrated on one policy matchup instead of being spread across comparisons.',
+      title: 'Largest share of A/B evaluations from a single policy pair.',
     },
   ].filter(Boolean);
 
@@ -299,10 +288,9 @@ function EvaluatorOrgDetails({ org, rankImpact, isRankImpactLoading }) {
         <div>
           <h4>{org.label}</h4>
           <span>
-            {org.count.toLocaleString()} counted evals · {org.policyCount} policies · {org.pairCount} pairs
+            {org.count.toLocaleString()} A/B evals · {org.policyCount} policies · {org.pairCount} pairs
           </span>
         </div>
-        <strong>{formatPercent(org.tieRate)} ties</strong>
       </div>
 
       <div className="evaluator-org-detail-rail" tabIndex={0} aria-label={`Statistics for ${org.label}`}>
@@ -422,7 +410,7 @@ export default function TransparencyDashboard({ stats, filteredCount, query, onD
       <section className="transparency-dashboard evaluator-org-panel">
         <div className="evaluator-org-panel-header">
           <h3>Evaluator Org Statistics</h3>
-          <span>Loading counted public A/B evaluation statistics.</span>
+          <span>Loading public A/B evaluation statistics.</span>
         </div>
       </section>
     );
@@ -456,13 +444,13 @@ export default function TransparencyDashboard({ stats, filteredCount, query, onD
       <div className="evaluator-org-panel-header">
         <div>
           <h3>Evaluator Org Statistics</h3>
-          <p>
-            {stats.totalEvals.toLocaleString()} counted A/B evals ·{' '}
-            {stats.evaluatorOrganizationCount.toLocaleString()} evaluator orgs ·{' '}
-            {stats.pairCount.toLocaleString()} policy pairs
-            {query.trim()
-              ? ` · ${filteredCount.toLocaleString()} shown by current search`
-              : ''}
+          <p className="evaluator-overview-summary">
+            <span>{stats.totalEvals.toLocaleString()} A/B evals</span>
+            <span>{stats.evaluatorOrganizationCount.toLocaleString()} evaluator orgs</span>
+            <span>{stats.pairCount.toLocaleString()} policy pairs</span>
+            {query.trim() ? (
+              <span>{filteredCount.toLocaleString()} shown by current search</span>
+            ) : null}
           </p>
         </div>
         <div className="transparency-actions">

@@ -149,7 +149,7 @@ export default function PolicyInsightPanel({ policyStats, row }) {
   if (!policyStats) {
     return (
       <div className="policy-insight-box policy-insight-box-loading">
-        Transparency statistics are loading from counted public A/B evals.
+        Transparency statistics are loading from public A/B evals.
       </div>
     );
   }
