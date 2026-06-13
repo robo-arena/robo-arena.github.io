@@ -44,11 +44,11 @@
 
 .lb-table tbody .lb-data-row-even { background: #fafafa; }
 .lb-table tbody .lb-data-row-low-sample {
-  background: #f4efff;
+  background: #eef2ff;
 }
 
 .lb-table tbody .lb-data-row-low-sample td:first-child {
-  box-shadow: inset 4px 0 0 rgba(112, 70, 176, 0.62);
+  box-shadow: inset 4px 0 0 rgba(79, 93, 198, 0.62);
 }
 
 .lb-table tbody .lb-data-row:hover,
@@ -59,7 +59,7 @@
 
 .lb-table tbody .lb-data-row-low-sample:hover,
 .lb-table tbody .lb-data-row-low-sample:focus {
-  background: #efe7ff;
+  background: #e5eaff;
 }
 
 .lb-table tbody .lb-data-row:focus-visible td {
@@ -355,10 +355,10 @@
 .lb-low-sample-badge {
   display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(245, 151, 73, 0.42);
+  border: 1px solid rgba(79, 93, 198, 0.34);
   border-radius: 999px;
-  background: rgba(255, 244, 232, 0.82);
-  color: #8a4d1d;
+  background: rgba(239, 242, 255, 0.95);
+  color: #35429a;
   font-size: 0.68rem;
   font-weight: 750;
   line-height: 1;
