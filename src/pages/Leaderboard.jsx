@@ -161,6 +161,7 @@ export default function Leaderboard() {
                         className={[
                           'lb-data-row',
                           idx % 2 === 1 ? 'lb-data-row-even' : '',
+                          isLowSample ? 'lb-data-row-low-sample' : '',
                         ].filter(Boolean).join(' ')}
                         tabIndex={0}
                       >
@@ -208,6 +209,8 @@ export default function Leaderboard() {
                           <PolicyInsightPanel
                             policyStats={transparencyStats?.policyByName?.[r.policy]}
                             row={r}
+                            isLowSample={isLowSample}
+                            lowSampleThreshold={MAIN_LEADERBOARD_MIN_EVALS}
                           />
                         </td>
                       </tr>

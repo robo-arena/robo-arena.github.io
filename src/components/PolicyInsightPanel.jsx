@@ -145,7 +145,7 @@ function ActivityBars({ buckets }) {
   );
 }
 
-export default function PolicyInsightPanel({ policyStats, row }) {
+export default function PolicyInsightPanel({ policyStats, row, isLowSample = false, lowSampleThreshold = 100 }) {
   if (!policyStats) {
     return (
       <div className="policy-insight-box policy-insight-box-loading">
@@ -163,6 +163,14 @@ export default function PolicyInsightPanel({ policyStats, row }) {
           <strong>{policyStats.policy}</strong>
         </div>
         <div className="policy-insight-score">
+          {isLowSample && (
+            <span
+              className="policy-insight-low-sample-badge"
+              title={`${lowSampleThreshold}+ A/B evals per policy are required for the official leaderboard.`}
+            >
+              low sample
+            </span>
+          )}
           <span>Score {row?.score ?? 'n/a'}</span>
           <span>{policyStats.evals.toLocaleString()} A/B evals</span>
         </div>

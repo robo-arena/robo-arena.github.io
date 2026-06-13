@@ -48,18 +48,24 @@ function normalizeLeaderboardHistoryPayload(payload) {
 
 function normalizeAbEvaluationsPayload(payload) {
   if (!payload || !Array.isArray(payload.evaluations)) return payload;
+
+  const normalizePolicyBlock = (policy) => {
+    const sourceName = policy?.source_name ?? policy?.sourceName ?? policy?.name;
+    const displayName = renamePolicyForUi(policy?.display_name ?? policy?.displayName ?? policy?.name);
+    return {
+      ...policy,
+      source_name: sourceName,
+      display_name: displayName,
+      name: displayName,
+    };
+  };
+
   return {
     ...payload,
     evaluations: payload.evaluations.map((evaluation) => ({
       ...evaluation,
-      policyA: {
-        ...evaluation.policyA,
-        name: renamePolicyForUi(evaluation.policyA?.name),
-      },
-      policyB: {
-        ...evaluation.policyB,
-        name: renamePolicyForUi(evaluation.policyB?.name),
-      },
+      policyA: normalizePolicyBlock(evaluation.policyA),
+      policyB: normalizePolicyBlock(evaluation.policyB),
     })),
   };
 }

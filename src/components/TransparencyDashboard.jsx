@@ -26,6 +26,13 @@ function formatScoreDelta(value) {
   return `${value > 0 ? '+' : ''}${value} Elo`;
 }
 
+function formatRankDelta(value) {
+  if (value === null || value === undefined || Number.isNaN(value)) return 'out of official set';
+  if (value === 0) return 'no rank change';
+  const direction = value > 0 ? 'up' : 'down';
+  return `${Math.abs(value)} rank${Math.abs(value) === 1 ? '' : 's'} ${direction}`;
+}
+
 function DownloadButton({ children, onClick }) {
   return (
     <button type="button" className="transparency-download-btn" onClick={onClick}>
@@ -103,7 +110,7 @@ function IntegritySignals({ signals }) {
     <div className="integrity-signal-strip">
       <div className="integrity-signal-header">
         <div>
-          <h4>Review Signals</h4>
+          <h4>Audit Metrics</h4>
         </div>
       </div>
       <div className="integrity-signal-row" tabIndex={0} aria-label="Integrity signals">
@@ -139,8 +146,9 @@ function RankChangeList({ changes }) {
         <div className="transparency-rank-change-row" key={change.policy}>
           <span title={change.policy}>{change.policy}</span>
           <small>
-            #{change.baseRank} to {change.withoutRank ? `#${change.withoutRank}` : 'out'} ·{' '}
-            {formatScoreDelta(change.scoreDelta)}
+            {formatRankDelta(change.rankDelta)} · #{change.baseRank} to{' '}
+            {change.withoutRank ? `#${change.withoutRank}` : 'out'} ·{' '}
+            score {formatScoreDelta(change.scoreDelta)}
           </small>
         </div>
       ))}
@@ -229,7 +237,10 @@ function PairList({ pairs }) {
           <div className="transparency-pair-row" key={label}>
             <div>
               <span title={label}>{label}</span>
-              <small>tie rate {formatPercent(pair.tieRate)}</small>
+              <small>
+                {pair.policy1Wins ?? 0}-{pair.ties ?? 0}-{pair.policy2Wins ?? 0} · tie rate{' '}
+                {formatPercent(pair.tieRate)}
+              </small>
             </div>
             <strong>{pair.count}</strong>
           </div>
@@ -423,9 +434,18 @@ export default function TransparencyDashboard({ stats, filteredCount, query, onD
   });
   const summaryPayload = {
     generated_at: stats.generatedAt,
-    note: 'Derived from counted public RoboArena A/B evaluations.',
+    source: 'Derived from public RoboArena A/B evaluations currently included in benchmark statistics.',
+    definitions: {
+      official_policy_eval_threshold: stats.integritySignals?.officialPolicyEvalThreshold ?? 100,
+      win_rate: 'Wins divided by non-tie outcomes.',
+      tie_rate: 'Ties divided by all A/B evaluations in the slice.',
+      single_org_dependence:
+        'Largest share of one official policy\'s A/B evaluations contributed by a single evaluator organization.',
+      leave_one_org_rerun:
+        'Official leaderboard recomputed with one evaluator organization removed, using the same ranking algorithm as the leaderboard.',
+    },
     totals: {
-      counted_ab_evaluations: stats.totalEvals,
+      public_ab_evaluations: stats.totalEvals,
       evaluator_organizations: stats.evaluatorOrganizationCount,
       evaluator_accounts: stats.evaluatorAccountCount,
       unique_policy_pairs: stats.pairCount,
@@ -433,10 +453,12 @@ export default function TransparencyDashboard({ stats, filteredCount, query, onD
       first_eval_at: stats.firstEvalAt,
       last_eval_at: stats.lastEvalAt,
     },
+    recent_activity: stats.recentActivity,
     evaluator_organizations: evaluatorOrganizationsForDownload,
+    evaluator_accounts: stats.evaluatorAccounts,
     integrity_signals: stats.integritySignals,
     policies: stats.policies,
-    pairs: stats.pairs,
+    policy_pairs: stats.pairs,
   };
 
   return (
@@ -467,7 +489,7 @@ export default function TransparencyDashboard({ stats, filteredCount, query, onD
             onClick={async () => {
               if (!onDownloadEvals) return;
               const payload = await onDownloadEvals();
-              downloadJson('roboarena-counted-ab-evaluations.json', payload);
+              downloadJson('roboarena-public-ab-evaluations.json', payload);
             }}
           >
             Evals JSON

@@ -175,6 +175,8 @@ function createContributorPairStats(policy1, policy2) {
     policy1,
     policy2,
     count: 0,
+    policy1Wins: 0,
+    policy2Wins: 0,
     ties: 0,
   };
 }
@@ -364,6 +366,8 @@ function camelContributorSummary(contributor) {
     policies: contributor.policies || [],
     pairs: (contributor.pairs || []).map((pair) => ({
       ...pair,
+      policy1Wins: pair.policy1_wins ?? pair.policy1Wins ?? 0,
+      policy2Wins: pair.policy2_wins ?? pair.policy2Wins ?? 0,
       tieRate: pair.tie_rate ?? pair.tieRate ?? 0,
     })),
     recentActivity: contributor.recent_activity || contributor.recentActivity || [],
@@ -539,6 +543,8 @@ export function buildTransparencyStats(evaluations = [], requestStatsPayload = n
       const contributorPairStats = stats.pairs.get(pairKey);
       contributorPairStats.count += 1;
       if (preference === 'TIE') contributorPairStats.ties += 1;
+      else if (winner === contributorPairStats.policy1) contributorPairStats.policy1Wins += 1;
+      else if (winner === contributorPairStats.policy2) contributorPairStats.policy2Wins += 1;
       if (month) increment(stats.months, month);
       stats.recentEvaluations.push(recentEval);
       if (preference === 'TIE') stats.ties += 1;

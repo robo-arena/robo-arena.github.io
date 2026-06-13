@@ -43,10 +43,23 @@
 .lb-table .right  { text-align: right;  padding-right: 10x;} /* 10x is a typo technically, but it looks fine so whatever */
 
 .lb-table tbody .lb-data-row-even { background: #fafafa; }
+.lb-table tbody .lb-data-row-low-sample {
+  background: #f4efff;
+}
+
+.lb-table tbody .lb-data-row-low-sample td:first-child {
+  box-shadow: inset 4px 0 0 rgba(112, 70, 176, 0.62);
+}
+
 .lb-table tbody .lb-data-row:hover,
 .lb-table tbody .lb-data-row:focus {
   background: #fff3e6;
   outline: none;
+}
+
+.lb-table tbody .lb-data-row-low-sample:hover,
+.lb-table tbody .lb-data-row-low-sample:focus {
+  background: #efe7ff;
 }
 
 .lb-table tbody .lb-data-row:focus-visible td {

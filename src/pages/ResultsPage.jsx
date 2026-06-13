@@ -158,11 +158,27 @@ export default function ResultsPage() {
 
   const downloadAllCountedEvals = async () => {
     const d = await apiGetJson('/list_ab_evaluations')
-    const countedEvaluations = (d.evaluations || []).filter(isRankingIncludedEvaluation)
+    const publicEvaluations = (d.evaluations || []).map((evaluation) => ({
+      ...evaluation,
+      ranking_included: isRankingIncludedEvaluation(evaluation),
+    }))
+    const rankingIncludedCount = publicEvaluations.filter(
+      (evaluation) => evaluation.ranking_included
+    ).length
     return {
       generated_at: new Date().toISOString(),
-      count: countedEvaluations.length,
-      evaluations: countedEvaluations,
+      source: 'Public RoboArena A/B evaluations currently exposed by the evaluation viewer.',
+      definitions: {
+        ranking_included:
+          'False for public A/B evaluations that are shown for transparency but excluded from leaderboard ranking, such as baseline policy comparisons.',
+        source_name:
+          'Policy identifier stored by the backend before website display-name aliases are applied.',
+        display_name:
+          'Policy name shown on the RoboArena website.',
+      },
+      total_public_ab_evaluations: publicEvaluations.length,
+      ranking_included_evaluations: rankingIncludedCount,
+      evaluations: publicEvaluations,
     }
   }
 
