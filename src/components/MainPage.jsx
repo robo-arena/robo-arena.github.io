@@ -15,6 +15,8 @@ import JoinEvaluator from '../pages/JoinEvaluator.jsx';
 import Challenge from '../pages/Challenge.jsx';
 import AdminMetrics from '../pages/AdminMetrics.jsx';
 
+const dataDumpUrl = "https://huggingface.co/datasets/RoboArena/DataDump_07-17-2026";
+
 export default function MainPage() {
   return (
     <>
@@ -61,7 +63,7 @@ export default function MainPage() {
 
 
         <NavLink
-          to="https://huggingface.co/datasets/RoboArena/DataDump_02-03-2026"
+          to={dataDumpUrl}
           className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}
           target="_blank"
           rel="noopener noreferrer"

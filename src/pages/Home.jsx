@@ -7,13 +7,14 @@ import leaderboardImg from '../assets/leaderboard.png';
 import simEvalVideo from '../assets/sim_eval.mp4';
 import discordImg from '../assets/discord.svg';
 import { HiOutlineDatabase } from 'react-icons/hi'
-import { BenchmarkIntegrityLetter } from '../components/BenchmarkIntegrityNotice.jsx'
+// import { BenchmarkIntegrityLetter } from '../components/BenchmarkIntegrityNotice.jsx'
 import '../css/theme.css'
 import './home.css'               // small local styles
 
 const arxivId = "2506.18123"; // <-- your paper’s arXiv ID
 const arxivUrl = `https://arxiv.org/abs/${arxivId}`; // abstract page
 const pdfUrl = `https://arxiv.org/pdf/${arxivId}.pdf`; // pdf
+const dataDumpUrl = "https://huggingface.co/datasets/RoboArena/DataDump_07-17-2026";
 
 /* ---------- quick helpers ---------- */
 const authors = [
@@ -74,7 +75,7 @@ export default function Home() {
         </span>
       </h1>
 
-      <BenchmarkIntegrityLetter />
+      {/* <BenchmarkIntegrityLetter /> */}
 
       {/* Author line */}
       <p className="author-line">
@@ -152,7 +153,7 @@ export default function Home() {
         </Link>
 
         <Link
-          to="https://huggingface.co/datasets/RoboArena/DataDump_02-03-2026"
+          to={dataDumpUrl}
           className="link-card"
           // Opens HF link in a new tab
           target="_blank"

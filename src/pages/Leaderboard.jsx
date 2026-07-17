@@ -3,7 +3,7 @@ import '../css/theme.css';
 import './leaderboard.css';          // 💡 add a page-specific stylesheet
 import PolicyAnalysisReport from '../components/PolicyAnalysisReport.jsx';
 import PolicyInsightPanel from '../components/PolicyInsightPanel.jsx';
-import { BenchmarkIntegrityCallout } from '../components/BenchmarkIntegrityNotice.jsx';
+// import { BenchmarkIntegrityCallout } from '../components/BenchmarkIntegrityNotice.jsx';
 import { apiGetJson } from '../api';
 import arxivLogo from '../assets/arxiv-logo.png';
 import { HiOutlineClock } from 'react-icons/hi';
@@ -68,7 +68,7 @@ export default function Leaderboard() {
         Policy Leaderboard
       </h2>
 
-      <BenchmarkIntegrityCallout />
+      {/* <BenchmarkIntegrityCallout /> */}
 
       {updated && (
         <p style={{ textAlign: 'center', fontSize: '0.95rem', color: '#555' }}>
